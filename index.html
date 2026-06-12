@@ -259,6 +259,37 @@ a{color:var(--gold);text-decoration:none}
 .btn-cancel{background:var(--surface2);color:var(--text2);padding:9px 18px;border-radius:8px;font-size:.88rem;border:1px solid var(--border)}
 .btn-save{background:var(--primary);color:#fff;font-weight:700;padding:9px 20px;border-radius:8px;font-size:.88rem}
 
+/* ── TRILHA ─────────────────────────────────────────────── */
+.trilha-header{background:linear-gradient(135deg,var(--primary),var(--primary2));border-radius:14px;padding:24px 28px;margin-bottom:28px;color:#fff}
+.trilha-header h2{font-size:1.25rem;font-weight:800;margin-bottom:6px}
+.trilha-header p{font-size:.88rem;color:rgba(255,255,255,.7);line-height:1.5}
+.trilha-progress-bar{background:rgba(255,255,255,.2);border-radius:20px;height:8px;margin-top:16px;overflow:hidden}
+.trilha-progress-fill{height:100%;background:var(--gold);border-radius:20px;transition:width .6s}
+.trilha-progress-label{font-size:.78rem;color:rgba(255,255,255,.6);margin-top:6px}
+.trilha-path{display:flex;flex-direction:column;gap:0}
+.trilha-etapa{display:flex;align-items:stretch;gap:0;cursor:pointer}
+.trilha-etapa.locked{cursor:not-allowed}
+.trilha-col-left{display:flex;flex-direction:column;align-items:center;width:56px;flex-shrink:0}
+.trilha-node{width:44px;height:44px;border-radius:50%;border:3px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:800;color:var(--text2);transition:all .3s;flex-shrink:0;z-index:1}
+.trilha-node.done{background:var(--green);border-color:var(--green);color:#fff}
+.trilha-node.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 0 0 4px rgba(26,47,74,.15)}
+.trilha-node.locked{background:var(--surface2);border-color:var(--border);color:var(--border)}
+.trilha-line{width:3px;flex:1;background:var(--border);margin:0 auto;min-height:24px}
+.trilha-line.done{background:var(--green)}
+.trilha-card{flex:1;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:16px 20px;margin:0 0 12px 14px;transition:all .2s;display:flex;align-items:center;gap:14px}
+.trilha-etapa:hover:not(.locked) .trilha-card{border-color:var(--primary);box-shadow:0 4px 16px rgba(26,47,74,.1)}
+.trilha-card.done{border-color:rgba(22,163,74,.3);background:#f0fdf4}
+.trilha-card.active{border-color:var(--primary);background:#EFF6FF}
+.trilha-card.locked{opacity:.5}
+.trilha-card-icon{font-size:1.4rem;flex-shrink:0}
+.trilha-card-body{flex:1}
+.trilha-card-title{font-weight:700;font-size:.95rem;color:var(--primary)}
+.trilha-card-sub{font-size:.75rem;color:var(--text2);margin-top:3px}
+.trilha-card-badge{font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0}
+.tcb-done{background:#DCFCE7;color:#166534}
+.tcb-active{background:#DBEAFE;color:#1e3a8a}
+.tcb-locked{background:var(--surface2);color:var(--text2)}
+
 /* ── EMPTY / HELPER ─────────────────────────────────────── */
 .empty-state{text-align:center;padding:60px 20px;color:var(--text2);font-size:.9rem}
 .empty-state .empty-icon{font-size:2.5rem;margin-bottom:12px}
@@ -366,10 +397,16 @@ a{color:var(--gold);text-decoration:none}
         <div class="nav-item" id="nav-certificados" onclick="navTo('certificados')">
           <span class="nav-icon">🏆</span> Certificados
         </div>
+        <div class="nav-item" id="nav-trilha" onclick="navTo('trilha')">
+          <span class="nav-icon">🗺️</span> Trilha
+        </div>
         <div class="nav-sep"></div>
         <div class="nav-label">Admin</div>
         <div class="nav-item admin-only" id="nav-admin-cursos" onclick="navTo('admin-cursos')" style="display:none">
           <span class="nav-icon">⚙️</span> Gerenciar Cursos
+        </div>
+        <div class="nav-item admin-only" id="nav-admin-trilha" onclick="navTo('admin-trilha')" style="display:none">
+          <span class="nav-icon">🗺️</span> Gerenciar Trilha
         </div>
         <div class="nav-item admin-only" id="nav-admin-usuarios" onclick="navTo('admin-usuarios')" style="display:none">
           <span class="nav-icon">👥</span> Colaboradores
@@ -534,7 +571,8 @@ window.navTo = function(screen){
   if(navEl) navEl.classList.add('active');
   const titles = {
     dashboard:'Dashboard', cursos:'Cursos', certificados:'Meus Certificados',
-    'admin-cursos':'Gerenciar Cursos', 'admin-usuarios':'Colaboradores'
+    trilha:'Trilha de Capacitação',
+    'admin-cursos':'Gerenciar Cursos', 'admin-trilha':'Gerenciar Trilha', 'admin-usuarios':'Colaboradores'
   };
   document.getElementById('page-title').textContent = titles[screen] || '';
   const ca = document.getElementById('content-area');
@@ -542,7 +580,9 @@ window.navTo = function(screen){
   if(screen==='dashboard') renderDashboard(ca);
   else if(screen==='cursos') renderCursos(ca);
   else if(screen==='certificados') renderCertificados(ca);
+  else if(screen==='trilha') renderTrilha(ca);
   else if(screen==='admin-cursos') renderAdminCursos(ca);
+  else if(screen==='admin-trilha') renderAdminTrilha(ca);
   else if(screen==='admin-usuarios') renderAdminUsuarios(ca);
 };
 
@@ -1182,6 +1222,412 @@ window.modalManageQuiz = async function(courseId, modId, modTitle, courseTitle){
     toast('Questão adicionada!'); closeModal();
     modalManageQuiz(courseId,modId,modTitle,courseTitle);
   }, 'Adicionar Questão');
+};
+
+// ─── TRILHA — VISUALIZAÇÃO ────────────────────────────────
+async function renderTrilha(ca){
+  const trilhasSnap = await getDocs(query(collection(db,'trilhas'), orderBy('ordem')));
+  const trilhas = []; trilhasSnap.forEach(d => trilhas.push({id:d.id,...d.data()}));
+  const ativas = userProfile?.role==='admin' ? trilhas : trilhas.filter(t=>t.ativo);
+
+  if(!ativas.length){
+    ca.innerHTML = `<div class="empty-state"><div class="empty-icon">🗺️</div>Nenhuma trilha disponível ainda.</div>`;
+    return;
+  }
+
+  // Renderiza a primeira trilha ativa por padrão
+  await renderTrilhaDetalhe(ca, ativas[0]);
+}
+
+async function renderTrilhaDetalhe(ca, trilha){
+  const [etapasSnap, progSnap] = await Promise.all([
+    getDocs(query(collection(db,'trilhas',trilha.id,'etapas'), orderBy('ordem'))),
+    getDocs(collection(db,'progresso-trilha',currentUser.uid,'etapas'))
+  ]);
+  const etapas = []; etapasSnap.forEach(d => etapas.push({id:d.id,...d.data()}));
+  const progMap = {}; progSnap.forEach(d => progMap[d.id] = d.data());
+
+  const total = etapas.length;
+  const concluidas = etapas.filter(e => progMap[e.id]?.concluido).length;
+  const pct = total ? Math.round((concluidas/total)*100) : 0;
+
+  let pathHtml = '';
+  etapas.forEach((e, i) => {
+    const prog = progMap[e.id];
+    const done = prog?.concluido;
+    const isFirst = i === 0;
+    const prevDone = i === 0 || progMap[etapas[i-1].id]?.concluido;
+    const isActive = !done && prevDone;
+    const locked = !done && !prevDone;
+    const lineClass = done ? 'done' : '';
+    const nodeClass = done ? 'done' : isActive ? 'active' : 'locked';
+    const cardClass = done ? 'done' : isActive ? 'active' : 'locked';
+    const badge = done
+      ? `<span class="trilha-card-badge tcb-done">✓ Concluído</span>`
+      : isActive
+        ? `<span class="trilha-card-badge tcb-active">→ Disponível</span>`
+        : `<span class="trilha-card-badge tcb-locked">🔒 Bloqueado</span>`;
+    const icon = done ? '✅' : isActive ? (e.pdfUrl ? '📄' : '📝') : '🔒';
+    const clickable = done || isActive;
+    pathHtml += `
+    <div class="trilha-etapa ${locked?'locked':''}" ${clickable?`onclick="openEtapa('${trilha.id}','${e.id}')"`:''}>
+      <div class="trilha-col-left">
+        <div class="trilha-node ${nodeClass}">${done?'✓':(i+1)}</div>
+        ${i < total-1 ? `<div class="trilha-line ${lineClass}"></div>` : ''}
+      </div>
+      <div class="trilha-card ${cardClass}">
+        <div class="trilha-card-icon">${icon}</div>
+        <div class="trilha-card-body">
+          <div class="trilha-card-title">${e.titulo}</div>
+          <div class="trilha-card-sub">${e.pdfUrl?'📄 Documento · ':''}${e.temQuiz?'🧠 Quiz · ':''}${e.duracaoMin?e.duracaoMin+' min':'Leitura'}</div>
+        </div>
+        ${badge}
+      </div>
+    </div>`;
+  });
+
+  ca.innerHTML = `
+  <div class="trilha-header">
+    <h2>🗺️ ${trilha.titulo}</h2>
+    <p>${trilha.descricao||''}</p>
+    <div class="trilha-progress-bar"><div class="trilha-progress-fill" style="width:${pct}%"></div></div>
+    <div class="trilha-progress-label">${concluidas} de ${total} etapas concluídas — ${pct}%</div>
+  </div>
+  <div class="trilha-path">${pathHtml}</div>`;
+}
+
+window.openEtapa = async function(trilhaId, etapaId){
+  const ca = document.getElementById('content-area');
+  ca.innerHTML = '<div class="spinner" style="margin:60px auto"></div>';
+
+  const [etapaSnap, trilhaSnap, progSnap] = await Promise.all([
+    getDoc(doc(db,'trilhas',trilhaId,'etapas',etapaId)),
+    getDoc(doc(db,'trilhas',trilhaId)),
+    getDoc(doc(db,'progresso-trilha',currentUser.uid,'etapas',etapaId))
+  ]);
+  const e = {id:etapaId,...etapaSnap.data()};
+  const trilha = {id:trilhaId,...trilhaSnap.data()};
+  const prog = progSnap.exists() ? progSnap.data() : {};
+  document.getElementById('page-title').textContent = e.titulo;
+
+  let pdfHtml = '';
+  if(e.pdfUrl){
+    const embed = driveEmbed(e.pdfUrl);
+    pdfHtml = `<div class="pdf-section"><div class="pdf-header">📄 Documento — ${e.titulo}</div><iframe class="pdf-frame" src="${embed}" allowfullscreen></iframe></div>`;
+  }
+  let contentHtml = '';
+  if(e.conteudo){
+    contentHtml = `<div class="content-section"><h3>📝 Conteúdo</h3><p>${e.conteudo.replace(/\n/g,'<br>')}</p></div>`;
+  }
+
+  const done = prog.concluido;
+  const btnLabel = e.temQuiz && !prog.quizRealizado
+    ? (done?'✓ Etapa Concluída':'Fazer Quiz e Concluir')
+    : (done?'✓ Etapa Concluída':'Marcar como Concluído');
+
+  ca.innerHTML = `
+  <div class="mod-view-container">
+    <button class="back-btn" onclick="navTo('trilha')">← Trilha</button>
+    <div style="margin-bottom:18px">
+      <div style="font-size:.75rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Trilha · ${trilha.titulo}</div>
+      <h2 style="font-size:1.2rem;color:var(--primary);font-weight:800">${e.titulo}</h2>
+    </div>
+    ${pdfHtml}${contentHtml}
+    <button class="complete-btn" onclick="completeEtapa('${trilhaId}','${etapaId}')" ${done?'disabled':''}>
+      ${btnLabel}
+    </button>
+  </div>`;
+};
+
+window.completeEtapa = async function(trilhaId, etapaId){
+  const etapaSnap = await getDoc(doc(db,'trilhas',trilhaId,'etapas',etapaId));
+  const e = etapaSnap.data();
+  if(e.temQuiz) await startQuizTrilha(trilhaId, etapaId);
+  else {
+    await setDoc(doc(db,'progresso-trilha',currentUser.uid,'etapas',etapaId),
+      {concluido:true, quizRealizado:false, quizNota:0, concluidoEm:serverTimestamp()}, {merge:true});
+    toast('Etapa concluída! ✓');
+    navTo('trilha');
+  }
+};
+
+async function startQuizTrilha(trilhaId, etapaId){
+  const ca = document.getElementById('content-area');
+  ca.innerHTML = '<div class="spinner" style="margin:60px auto"></div>';
+  const snap = await getDocs(query(collection(db,'trilhas',trilhaId,'etapas',etapaId,'quiz'), orderBy('ordem')));
+  const questions = []; snap.forEach(d => questions.push({id:d.id,...d.data()}));
+  if(!questions.length){
+    await setDoc(doc(db,'progresso-trilha',currentUser.uid,'etapas',etapaId),
+      {concluido:true,quizRealizado:true,quizNota:100,concluidoEm:serverTimestamp()},{merge:true});
+    toast('Etapa concluída!'); navTo('trilha'); return;
+  }
+  quizData = {questions, answers:new Array(questions.length).fill(null), current:0, trilhaId, etapaId, isTrilha:true};
+  renderQuizTrilha();
+}
+
+function renderQuizTrilha(){
+  const {questions, answers, current, trilhaId, etapaId} = quizData;
+  const q = questions[current]; const total = questions.length;
+  const ca = document.getElementById('content-area');
+  document.getElementById('page-title').textContent = 'Quiz da Trilha';
+  ca.innerHTML = `
+  <div class="quiz-container">
+    <button class="back-btn" onclick="openEtapa('${trilhaId}','${etapaId}')">← Voltar</button>
+    <div class="quiz-header"><h2>🧠 Quiz — Questão ${current+1} de ${total}</h2></div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" style="width:${Math.round(current/total*100)}%"></div></div>
+    <div class="question-card">
+      <div class="question-text">${q.pergunta}</div>
+      <div class="options-list">
+        ${q.opcoes.map((o,i)=>`<button class="option-btn ${answers[current]===i?'selected':''}" onclick="selectAnswerTrilha(${i})">${o.texto}</button>`).join('')}
+      </div>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn-sec" onclick="quizTrilhaPrev()" ${current===0?'disabled':''}>← Anterior</button>
+      ${current<total-1
+        ? `<button class="btn-gold" onclick="quizTrilhaNext()">Próxima →</button>`
+        : `<button class="btn-gold" onclick="quizTrilhaSubmit()">Finalizar ✓</button>`}
+    </div>
+  </div>`;
+}
+
+window.selectAnswerTrilha = i => { quizData.answers[quizData.current]=i; renderQuizTrilha(); };
+window.quizTrilhaNext = () => { if(quizData.answers[quizData.current]===null){toast('Selecione uma opção','err');return;} quizData.current++; renderQuizTrilha(); };
+window.quizTrilhaPrev = () => { if(quizData.current>0){quizData.current--;renderQuizTrilha();} };
+window.quizTrilhaSubmit = async function(){
+  if(quizData.answers[quizData.current]===null){toast('Selecione uma opção','err');return;}
+  const {questions,answers,trilhaId,etapaId} = quizData;
+  let correct=0; questions.forEach((q,i)=>{if(answers[i]!==null&&q.opcoes[answers[i]]?.correta)correct++;});
+  const score=Math.round((correct/questions.length)*100);
+  const passed=score>=70;
+  if(passed) await setDoc(doc(db,'progresso-trilha',currentUser.uid,'etapas',etapaId),
+    {concluido:true,quizRealizado:true,quizNota:score,concluidoEm:serverTimestamp()},{merge:true});
+  const ca = document.getElementById('content-area');
+  ca.innerHTML = `
+  <div class="quiz-container">
+    <div class="quiz-result">
+      <div class="result-icon">${passed?'🏆':'😔'}</div>
+      <div class="result-score">${score}%</div>
+      <div style="color:var(--text2);margin:4px 0">${correct} de ${questions.length} corretas</div>
+      <div class="result-msg">${passed?'Parabéns! Etapa concluída.':'Mínimo 70%. Tente novamente!'}</div>
+      ${passed
+        ? `<button class="btn-gold" onclick="navTo('trilha')">Ver Trilha →</button>`
+        : `<button class="btn-gold" onclick="openEtapa('${trilhaId}','${etapaId}')">↩ Tentar Novamente</button>`}
+    </div>
+  </div>`;
+};
+
+// ─── TRILHA — ADMIN ───────────────────────────────────────
+async function renderAdminTrilha(ca){
+  const snap = await getDocs(query(collection(db,'trilhas'), orderBy('ordem')));
+  const trilhas = []; snap.forEach(d => trilhas.push({id:d.id,...d.data()}));
+
+  const rows = trilhas.map(t=>`
+  <tr>
+    <td>${t.ordem}</td>
+    <td style="font-weight:600">${t.titulo}</td>
+    <td><span class="status-dot ${t.ativo?'on':'off'}"></span>${t.ativo?'Ativa':'Rascunho'}</td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="action-btn" onclick="modalEditTrilha('${t.id}')">✏️ Editar</button>
+      <button class="action-btn" onclick="manageEtapas('${t.id}','${t.titulo}')">📋 Etapas</button>
+      <button class="action-btn" onclick="toggleTrilha('${t.id}',${t.ativo})">${t.ativo?'Ocultar':'Publicar'}</button>
+      <button class="action-btn danger" onclick="deleteTrilha('${t.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+
+  ca.innerHTML = `
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">🗺️ Trilhas</div>
+      <button class="btn-add" onclick="modalNovaTrilha()">+ Nova Trilha</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>#</th><th>Título</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px">Nenhuma trilha</td></tr>'}</tbody>
+    </table>
+  </div>`;
+}
+
+window.manageEtapas = async function(trilhaId, trilhaTitle){
+  const ca = document.getElementById('content-area');
+  document.getElementById('page-title').textContent = `Etapas — ${trilhaTitle}`;
+  ca.innerHTML = '<div class="spinner" style="margin:40px auto"></div>';
+  await renderEtapasAdmin(ca, trilhaId, trilhaTitle);
+};
+
+async function renderEtapasAdmin(ca, trilhaId, trilhaTitle){
+  const snap = await getDocs(query(collection(db,'trilhas',trilhaId,'etapas'), orderBy('ordem')));
+  const etapas = []; snap.forEach(d => etapas.push({id:d.id,...d.data()}));
+
+  const rows = etapas.map(e=>`
+  <tr>
+    <td>${e.ordem}</td>
+    <td style="font-weight:600">${e.titulo}</td>
+    <td>${e.pdfUrl?'📄 ':''}${e.conteudo?'📝 ':''}${e.temQuiz?'🧠':''}</td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="action-btn" onclick="modalEditEtapa('${trilhaId}','${e.id}','${trilhaTitle}')">✏️ Editar</button>
+      <button class="action-btn" onclick="modalManageQuizTrilha('${trilhaId}','${e.id}','${e.titulo}','${trilhaTitle}')">🧠 Quiz</button>
+      <button class="action-btn danger" onclick="deleteEtapa('${trilhaId}','${e.id}','${trilhaTitle}')">🗑</button>
+    </td>
+  </tr>`).join('');
+
+  ca.innerHTML = `
+  <button class="back-btn" onclick="navTo('admin-trilha')">← Gerenciar Trilha</button>
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">📋 Etapas — ${trilhaTitle}</div>
+      <button class="btn-add" onclick="modalNovaEtapa('${trilhaId}','${trilhaTitle}')">+ Nova Etapa</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>#</th><th>Título</th><th>Conteúdo</th><th>Ações</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px">Nenhuma etapa</td></tr>'}</tbody>
+    </table>
+  </div>`;
+}
+
+window.modalNovaTrilha = function(){
+  openModal('Nova Trilha',`
+  <div class="field"><label>Título</label><input id="t-titulo" type="text" placeholder="Ex: Trilha de Integração"></div>
+  <div class="field"><label>Descrição</label><textarea id="t-desc" placeholder="Descreva o objetivo desta trilha"></textarea></div>
+  <div class="field"><label>Ordem</label><input id="t-ordem" type="number" value="1" min="1"></div>
+  `, async ()=>{
+    const titulo = document.getElementById('t-titulo').value.trim();
+    if(!titulo){toast('Digite o título','err');return;}
+    await addDoc(collection(db,'trilhas'),{
+      titulo, descricao:document.getElementById('t-desc').value.trim(),
+      ordem:parseInt(document.getElementById('t-ordem').value)||1, ativo:false, criadoEm:serverTimestamp()
+    });
+    toast('Trilha criada!'); closeModal(); navTo('admin-trilha');
+  });
+};
+
+window.modalEditTrilha = async function(id){
+  const snap = await getDoc(doc(db,'trilhas',id)); const t = snap.data();
+  openModal('Editar Trilha',`
+  <div class="field"><label>Título</label><input id="t-titulo" type="text" value="${t.titulo||''}"></div>
+  <div class="field"><label>Descrição</label><textarea id="t-desc">${t.descricao||''}</textarea></div>
+  <div class="field"><label>Ordem</label><input id="t-ordem" type="number" value="${t.ordem||1}" min="1"></div>
+  `, async ()=>{
+    await updateDoc(doc(db,'trilhas',id),{
+      titulo:document.getElementById('t-titulo').value.trim(),
+      descricao:document.getElementById('t-desc').value.trim(),
+      ordem:parseInt(document.getElementById('t-ordem').value)||1,
+    });
+    toast('Trilha atualizada!'); closeModal(); navTo('admin-trilha');
+  });
+};
+
+window.toggleTrilha = async function(id,current){
+  await updateDoc(doc(db,'trilhas',id),{ativo:!current});
+  toast(!current?'Trilha publicada!':'Trilha ocultada'); navTo('admin-trilha');
+};
+window.deleteTrilha = async function(id){
+  if(!confirm('Excluir esta trilha?')) return;
+  await deleteDoc(doc(db,'trilhas',id)); toast('Trilha excluída'); navTo('admin-trilha');
+};
+
+function etapaForm(e={}){
+  return `
+  <div class="field"><label>Título</label><input id="e-titulo" type="text" value="${e.titulo||''}" placeholder="Título da etapa"></div>
+  <div class="field"><label>Ordem</label><input id="e-ordem" type="number" value="${e.ordem||1}" min="1"></div>
+  <div class="field"><label>📄 URL do Documento (Google Drive)</label><input id="e-pdf" type="text" value="${e.pdfUrl||''}" placeholder="https://drive.google.com/file/d/..."></div>
+  <div class="field"><label>Duração estimada (minutos)</label><input id="e-dur" type="number" value="${e.duracaoMin||''}" placeholder="15"></div>
+  <div class="field"><label>Conteúdo / Instrução</label><textarea id="e-conteudo" placeholder="Texto introdutório ou instruções para esta etapa...">${e.conteudo||''}</textarea></div>
+  <div class="field" style="display:flex;align-items:center;gap:10px">
+    <input type="checkbox" id="e-quiz" ${e.temQuiz?'checked':''} style="width:auto">
+    <label for="e-quiz" style="text-transform:none;font-size:.9rem;color:var(--text)">Esta etapa tem quiz</label>
+  </div>`;
+}
+
+window.modalNovaEtapa = function(trilhaId, trilhaTitle){
+  openModal('Nova Etapa', etapaForm(), async ()=>{
+    const titulo = document.getElementById('e-titulo').value.trim();
+    if(!titulo){toast('Digite o título','err');return;}
+    await addDoc(collection(db,'trilhas',trilhaId,'etapas'),{
+      titulo, ordem:parseInt(document.getElementById('e-ordem').value)||1,
+      pdfUrl:document.getElementById('e-pdf').value.trim(),
+      duracaoMin:parseInt(document.getElementById('e-dur').value)||0,
+      conteudo:document.getElementById('e-conteudo').value.trim(),
+      temQuiz:document.getElementById('e-quiz').checked, criadoEm:serverTimestamp()
+    });
+    toast('Etapa criada!'); closeModal();
+    await renderEtapasAdmin(document.getElementById('content-area'), trilhaId, trilhaTitle);
+  });
+};
+
+window.modalEditEtapa = async function(trilhaId, etapaId, trilhaTitle){
+  const snap = await getDoc(doc(db,'trilhas',trilhaId,'etapas',etapaId)); const e = snap.data();
+  openModal('Editar Etapa', etapaForm(e), async ()=>{
+    await updateDoc(doc(db,'trilhas',trilhaId,'etapas',etapaId),{
+      titulo:document.getElementById('e-titulo').value.trim(),
+      ordem:parseInt(document.getElementById('e-ordem').value)||1,
+      pdfUrl:document.getElementById('e-pdf').value.trim(),
+      duracaoMin:parseInt(document.getElementById('e-dur').value)||0,
+      conteudo:document.getElementById('e-conteudo').value.trim(),
+      temQuiz:document.getElementById('e-quiz').checked,
+    });
+    toast('Etapa atualizada!'); closeModal();
+    await renderEtapasAdmin(document.getElementById('content-area'), trilhaId, trilhaTitle);
+  });
+};
+
+window.deleteEtapa = async function(trilhaId, etapaId, trilhaTitle){
+  if(!confirm('Excluir esta etapa?')) return;
+  await deleteDoc(doc(db,'trilhas',trilhaId,'etapas',etapaId)); toast('Etapa excluída');
+  await renderEtapasAdmin(document.getElementById('content-area'), trilhaId, trilhaTitle);
+};
+
+window.modalManageQuizTrilha = async function(trilhaId, etapaId, etapaTitle, trilhaTitle){
+  const snap = await getDocs(query(collection(db,'trilhas',trilhaId,'etapas',etapaId,'quiz'), orderBy('ordem')));
+  const questions = []; snap.forEach(d => questions.push({id:d.id,...d.data()}));
+
+  let qHtml = questions.map((q,i)=>`
+  <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
+    <div style="font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--primary)">${i+1}. ${q.pergunta}</div>
+    ${q.opcoes.map(o=>`<div style="font-size:.78rem;color:${o.correta?'var(--green)':'var(--text2)'};padding:2px 0">${o.correta?'✓':'○'} ${o.texto}</div>`).join('')}
+    <button class="action-btn danger" style="margin-top:8px;font-size:.73rem" onclick="deleteQuizTrilha('${trilhaId}','${etapaId}','${q.id}','${etapaTitle}','${trilhaTitle}')">Excluir</button>
+  </div>`).join('');
+
+  openModal(`🧠 Quiz — ${etapaTitle}`,`
+  ${qHtml||'<p style="color:var(--text2);margin-bottom:16px;font-size:.85rem">Nenhuma questão ainda.</p>'}
+  <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+    <div style="font-weight:700;margin-bottom:12px;font-size:.88rem;color:var(--primary)">➕ Adicionar Questão</div>
+    <div class="field"><label>Pergunta</label><textarea id="nq-perg" placeholder="Digite a pergunta..."></textarea></div>
+    <div class="field"><label>Opção A</label><input id="nq-a" type="text" placeholder="Opção A"></div>
+    <div class="field"><label>Opção B</label><input id="nq-b" type="text" placeholder="Opção B"></div>
+    <div class="field"><label>Opção C (opcional)</label><input id="nq-c" type="text"></div>
+    <div class="field"><label>Opção D (opcional)</label><input id="nq-d" type="text"></div>
+    <div class="field"><label>Resposta Correta</label>
+      <select id="nq-correta" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%">
+        <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+      </select>
+    </div>
+    <div class="field"><label>Ordem</label><input id="nq-ordem" type="number" value="${questions.length+1}" min="1"></div>
+  </div>`,
+  async ()=>{
+    const perg=document.getElementById('nq-perg').value.trim();
+    const a=document.getElementById('nq-a').value.trim();
+    const b=document.getElementById('nq-b').value.trim();
+    if(!perg||!a||!b){toast('Preencha pergunta e pelo menos A e B','err');return;}
+    const c=document.getElementById('nq-c').value.trim();
+    const d=document.getElementById('nq-d').value.trim();
+    const ci=parseInt(document.getElementById('nq-correta').value);
+    const opcoes=[{texto:a},{texto:b}];
+    if(c)opcoes.push({texto:c}); if(d)opcoes.push({texto:d});
+    opcoes.forEach((o,i)=>o.correta=i===ci);
+    await addDoc(collection(db,'trilhas',trilhaId,'etapas',etapaId,'quiz'),{
+      pergunta:perg, opcoes, ordem:parseInt(document.getElementById('nq-ordem').value)||questions.length+1
+    });
+    await updateDoc(doc(db,'trilhas',trilhaId,'etapas',etapaId),{temQuiz:true});
+    toast('Questão adicionada!'); closeModal();
+    modalManageQuizTrilha(trilhaId,etapaId,etapaTitle,trilhaTitle);
+  },'Adicionar Questão');
+};
+
+window.deleteQuizTrilha = async function(trilhaId,etapaId,qId,etapaTitle,trilhaTitle){
+  if(!confirm('Excluir esta questão?')) return;
+  await deleteDoc(doc(db,'trilhas',trilhaId,'etapas',etapaId,'quiz',qId));
+  toast('Questão excluída'); closeModal();
+  modalManageQuizTrilha(trilhaId,etapaId,etapaTitle,trilhaTitle);
 };
 
 window.deleteQuestion = async function(courseId,modId,qId,modTitle,courseTitle){
