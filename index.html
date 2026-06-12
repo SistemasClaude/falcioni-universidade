@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Falcioni | Universidade Corporativa</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A2F4A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="logo-192.png">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F0F4F8;
+  --surface:#FFFFFF;
+  --surface2:#F8FAFC;
+  --border:#E2E8F0;
+  --gold:#C9A84C;
+  --gold2:#DDB95E;
+  --blue:#1A2F4A;
+  --primary:#1A2F4A;
+  --text:#1E293B;
+  --text2:#64748B;
+  --green:#16A34A;
+  --red:#DC2626;
+  --radius:12px;
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+button{cursor:pointer;border:none;font-family:inherit}
+input,textarea,select{font-family:inherit}
+a{color:var(--gold);text-decoration:none}
+
+/* TOAST */
+#toast{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast-item{background:var(--surface);border-left:4px solid var(--gold);padding:12px 18px;border-radius:8px;font-size:.9rem;max-width:300px;animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(26,47,74,.18);color:var(--text)}
+.toast-item.err{border-left-color:var(--red)}
+.toast-item.ok{border-left-color:var(--green)}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* LOADER */
+#loader{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:9998;flex-direction:column;gap:16px}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* LOGIN */
+#screen-login{display:none;min-height:100vh;align-items:center;justify-content:center;padding:20px;background:linear-gradient(160deg,#f0f4f8,#dde6f0)}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 20px 60px #0005}
+.login-logo{text-align:center;margin-bottom:30px}
+.login-logo img{height:60px;object-fit:contain}
+.login-logo h1{font-size:1.4rem;color:var(--gold);margin-top:12px;letter-spacing:1px}
+.login-logo p{font-size:.8rem;color:var(--text2);margin-top:4px}
+.form-group{margin-bottom:18px}
+.form-group label{display:block;font-size:.8rem;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--text);font-size:.95rem;transition:border .2s}
+.form-group input:focus{outline:none;border-color:var(--gold)}
+.btn-primary{width:100%;background:var(--primary);color:#fff;font-weight:700;padding:13px;border-radius:8px;font-size:1rem;transition:opacity .2s}
+.btn-primary:hover{opacity:.9}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh}
+.topbar{background:var(--primary);border-bottom:1px solid rgba(255,255,255,.1);padding:0 20px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(26,47,74,.25)}
+.topbar-brand{display:flex;align-items:center;gap:12px}
+.topbar-brand img{height:34px;border-radius:6px;background:#fff;padding:3px 8px}
+.topbar-brand span{font-weight:700;color:var(--gold);font-size:1rem}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.user-badge{font-size:.8rem;color:rgba(255,255,255,.7)}
+.btn-icon{background:transparent;color:rgba(255,255,255,.7);padding:6px 10px;border-radius:6px;font-size:.85rem;border:1px solid rgba(255,255,255,.25)}
+.btn-icon:hover{color:#fff;border-color:rgba(255,255,255,.5)}
+
+.main-content{padding:24px 20px;max-width:960px;margin:0 auto}
+
+/* TABS */
+.tabs{display:flex;gap:4px;background:var(--surface);border-radius:10px;padding:4px;margin-bottom:24px;border:1px solid var(--border)}
+.tab-btn{flex:1;padding:9px;border-radius:7px;background:transparent;color:var(--text2);font-size:.85rem;font-weight:600;transition:all .2s}
+.tab-btn.active{background:var(--gold);color:#111}
+
+/* CARDS */
+.section-title{font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.course-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s}
+.course-card:hover{transform:translateY(-3px);border-color:var(--gold)}
+.course-thumb{width:100%;height:140px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:3rem;position:relative}
+.course-thumb img{width:100%;height:100%;object-fit:cover}
+.course-badge{position:absolute;top:10px;right:10px;background:var(--gold);color:#111;font-size:.7rem;font-weight:700;padding:3px 8px;border-radius:20px}
+.course-body{padding:16px}
+.course-title{font-size:1rem;font-weight:700;margin-bottom:6px}
+.course-desc{font-size:.8rem;color:var(--text2);margin-bottom:12px;line-height:1.5}
+.progress-bar{background:var(--border);border-radius:20px;height:6px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:20px;transition:width .5s}
+.progress-text{font-size:.75rem;color:var(--text2);margin-top:5px;text-align:right}
+
+/* MODULE LIST */
+.back-btn{background:transparent;color:var(--text2);border:1px solid var(--border);padding:7px 14px;border-radius:8px;font-size:.85rem;margin-bottom:20px;display:inline-flex;align-items:center;gap:6px}
+.back-btn:hover{color:var(--text);border-color:var(--text2)}
+.course-header{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px}
+.course-header h2{font-size:1.3rem;color:var(--gold);margin-bottom:8px}
+.course-header p{color:var(--text2);font-size:.9rem;line-height:1.6}
+.modules-list{display:flex;flex-direction:column;gap:10px}
+.module-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:16px;cursor:pointer;transition:border-color .2s}
+.module-item:hover{border-color:var(--gold)}
+.module-item.locked{opacity:.5;cursor:not-allowed}
+.module-item.done{border-left:3px solid var(--green)}
+.mod-num{width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;flex-shrink:0}
+.mod-num.done{background:var(--green);color:#fff}
+.mod-info{flex:1}
+.mod-title{font-weight:600;font-size:.95rem}
+.mod-meta{font-size:.78rem;color:var(--text2);margin-top:3px}
+.mod-arrow{color:var(--text2);font-size:1.1rem}
+
+/* MODULE VIEW */
+.mod-view-container{max-width:760px;margin:0 auto}
+.video-container{background:#000;border-radius:var(--radius);overflow:hidden;margin-bottom:20px;position:relative;padding-top:56.25%}
+.video-container iframe{position:absolute;inset:0;width:100%;height:100%}
+.video-placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;color:var(--text2);font-size:.9rem}
+.pdf-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px}
+.pdf-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:.9rem;font-weight:600}
+.pdf-frame{width:100%;height:500px;border:none;display:block}
+.content-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px}
+.content-section h3{color:var(--gold);margin-bottom:12px;font-size:1rem}
+.content-section p{color:var(--text2);font-size:.9rem;line-height:1.7}
+.complete-btn{width:100%;background:linear-gradient(135deg,var(--green),#27ae60);color:#fff;font-weight:700;padding:14px;border-radius:10px;font-size:1rem;margin-bottom:20px}
+.complete-btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* QUIZ */
+.quiz-container{max-width:700px;margin:0 auto}
+.quiz-header{text-align:center;margin-bottom:24px}
+.quiz-header h2{color:var(--gold);font-size:1.2rem}
+.quiz-header p{color:var(--text2);font-size:.85rem;margin-top:6px}
+.quiz-progress{background:var(--border);border-radius:20px;height:6px;margin:16px 0}
+.quiz-progress-fill{height:100%;background:var(--gold);border-radius:20px;transition:width .4s}
+.question-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:16px}
+.question-text{font-size:1rem;font-weight:600;margin-bottom:16px;line-height:1.5}
+.options-list{display:flex;flex-direction:column;gap:8px}
+.option-btn{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:left;color:var(--text);font-size:.9rem;transition:all .2s}
+.option-btn:hover:not(:disabled){border-color:var(--gold);background:#FEF9EC}
+.option-btn.selected{border-color:var(--gold);background:#FEF9EC}
+.option-btn.correct{border-color:var(--green);background:#DCFCE7;color:#166534}
+.option-btn.wrong{border-color:var(--red);background:#FEE2E2;color:#991B1B}
+.quiz-nav{display:flex;justify-content:space-between;margin-top:16px}
+.btn-sec{background:var(--border);color:var(--text);padding:10px 20px;border-radius:8px;font-size:.9rem}
+.btn-gold{background:var(--gold);color:#111;font-weight:700;padding:10px 20px;border-radius:8px;font-size:.9rem}
+.quiz-result{text-align:center;padding:40px 20px}
+.result-icon{font-size:4rem;margin-bottom:16px}
+.result-score{font-size:2.5rem;font-weight:900;color:var(--gold)}
+.result-msg{font-size:1rem;color:var(--text2);margin:10px 0 24px}
+
+/* CERTIFICATE */
+.cert-container{background:var(--surface);border:2px solid var(--gold);border-radius:16px;padding:40px;text-align:center;max-width:700px;margin:20px auto}
+.cert-title{font-size:.85rem;letter-spacing:3px;color:var(--text2);text-transform:uppercase;margin-bottom:20px}
+.cert-main{font-size:1rem;color:var(--text2);line-height:1.8}
+.cert-name{font-size:1.8rem;font-weight:900;color:var(--gold);margin:12px 0}
+.cert-course{font-size:1.2rem;font-weight:700;margin:12px 0}
+.cert-date{font-size:.85rem;color:var(--text2);margin-top:20px}
+.cert-logo{margin-bottom:20px}
+.cert-logo img{height:50px}
+.cert-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.btn-print{background:var(--gold);color:#111;font-weight:700;padding:12px 28px;border-radius:8px;font-size:.95rem;margin-top:16px}
+
+/* ADMIN */
+.admin-sections{display:flex;flex-direction:column;gap:20px}
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.admin-card-header{padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.admin-card-title{font-weight:700;font-size:.95rem;display:flex;align-items:center;gap:8px}
+.btn-add{background:var(--gold);color:#111;font-weight:700;padding:7px 14px;border-radius:7px;font-size:.82rem}
+.admin-table{width:100%;border-collapse:collapse}
+.admin-table th{padding:10px 16px;text-align:left;font-size:.78rem;color:var(--text2);border-bottom:1px solid var(--border);text-transform:uppercase}
+.admin-table td{padding:12px 16px;font-size:.88rem;border-bottom:1px solid var(--border)}
+.admin-table tr:last-child td{border-bottom:none}
+.admin-table tr:hover td{background:var(--surface2)}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.status-dot.on{background:var(--green)}
+.status-dot.off{background:var(--red)}
+.action-btn{background:transparent;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:.78rem;cursor:pointer}
+.action-btn:hover{border-color:var(--text2);color:var(--text)}
+.action-btn.danger:hover{border-color:var(--red);color:var(--red)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:#0008;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px #0008}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface)}
+.modal-title{font-weight:700;font-size:1rem}
+.modal-close{background:transparent;color:var(--text2);font-size:1.3rem;padding:4px 8px}
+.modal-body{padding:20px 24px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:.78rem;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field textarea,.field select{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-size:.9rem}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--gold)}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0;background:var(--surface)}
+.btn-cancel{background:var(--border);color:var(--text);padding:9px 18px;border-radius:8px;font-size:.9rem}
+.btn-save{background:var(--gold);color:#111;font-weight:700;padding:9px 20px;border-radius:8px;font-size:.9rem}
+
+/* PROFILE / CERTS */
+.cert-list{display:flex;flex-direction:column;gap:10px}
+.cert-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:14px}
+.cert-icon{font-size:1.8rem}
+.cert-info h4{font-size:.95rem;font-weight:700}
+.cert-info p{font-size:.8rem;color:var(--text2)}
+.cert-actions{margin-left:auto}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .topbar-brand span{display:none}
+  .main-content{padding:16px}
+  .courses-grid{grid-template-columns:1fr}
+  .cert-container{padding:24px 16px}
+}
+@media print{
+  body{background:#fff;color:#000}
+  .topbar,.tabs,.back-btn,.btn-print{display:none!important}
+  .cert-container{border-color:#C9A84C!important;max-width:100%}
+  .cert-name,.cert-course{color:#1A2F4A!important}
+  .cert-main,.cert-date{color:#333!important}
+  .cert-title{color:#64748B!important}
+}
+</style>
+</head>
+<body>
+
+<div id="toast"></div>
+<div id="loader"><div class="spinner"></div><span style="color:var(--text2);font-size:.9rem">Carregando...</span></div>
+
+<!-- LOGIN -->
+<div id="screen-login" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="logo.png" alt="Falcioni" onerror="this.style.display='none'">
+      <h1>FALCIONI</h1>
+      <p>Universidade Corporativa</p>
+    </div>
+    <div class="form-group">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Senha</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Entrar</button>
+    <p style="text-align:center;margin-top:16px;font-size:.8rem;color:var(--text2)">Acesso restrito a colaboradores Falcioni</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <img src="logo.png" alt="Falcioni" onerror="this.style.display='none'">
+      <span>Universidade Corporativa</span>
+    </div>
+    <div class="topbar-right">
+      <span class="user-badge" id="user-badge"></span>
+      <button class="btn-icon" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+
+  <div class="main-content" id="main-content">
+    <!-- dynamic content here -->
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Modal</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" id="modal-save-btn">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, collection, doc, getDocs, getDoc, setDoc, addDoc, updateDoc, deleteDoc,
+  query, orderBy, serverTimestamp, writeBatch, where }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDHMFwbSQT4NjnszIHUn98FVNTYDfR9lsY",
+  authDomain: "falcioni-capacitacao-b04a0.firebaseapp.com",
+  projectId: "falcioni-capacitacao-b04a0",
+  storageBucket: "falcioni-capacitacao-b04a0.firebasestorage.app",
+  messagingSenderId: "163511049476",
+  appId: "1:163511049476:web:6f9f46828e1b9004fd8451"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// ─── STATE ────────────────────────────────────────────────────────
+let currentUser = null;
+let userProfile = null;
+let currentScreen = null;
+let currentCourse = null;
+let currentModule = null;
+let quizData = { questions:[], answers:[], current:0, score:0 };
+let adminTab = 'cursos';
+let modalSaveFn = null;
+
+// ─── TOAST ────────────────────────────────────────────────────────
+function toast(msg, type='ok'){
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(), 3200);
+}
+window.toast = toast;
+
+// ─── LOADER ───────────────────────────────────────────────────────
+function showLoader(v){ document.getElementById('loader').style.display = v ? 'flex' : 'none'; }
+
+// ─── AUTH ─────────────────────────────────────────────────────────
+onAuthStateChanged(auth, async user => {
+  showLoader(false);
+  if(user){
+    currentUser = user;
+    const snap = await getDoc(doc(db,'usuarios',user.uid));
+    if(snap.exists()){
+      const raw = snap.data();
+      // compat: Firebase console may save field names in Portuguese
+      userProfile = {
+        ...raw,
+        name:  raw.name  || raw.nome  || user.email.split('@')[0],
+        email: raw.email || raw['e-mail'] || user.email,
+        role:  raw.role  || raw.papel || 'colaborador',
+      };
+    } else {
+      // First login — create profile
+      userProfile = { name: user.email.split('@')[0], email: user.email, role:'colaborador', criadoEm: serverTimestamp() };
+      await setDoc(doc(db,'usuarios',user.uid), userProfile);
+    }
+    document.getElementById('user-badge').textContent = userProfile.name || user.email;
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    renderHome();
+  } else {
+    currentUser = null;
+    userProfile = null;
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('screen-login').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+
+window.doLogin = async function(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-pass').value;
+  if(!email||!pass){ toast('Preencha e-mail e senha','err'); return; }
+  showLoader(true);
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    showLoader(false);
+    toast('E-mail ou senha inválidos','err');
+  }
+};
+window.doLogout = async function(){
+  await signOut(auth);
+};
+document.getElementById('login-pass').addEventListener('keydown', e => { if(e.key==='Enter') window.doLogin(); });
+
+// ─── MODAL ────────────────────────────────────────────────────────
+function openModal(title, bodyHtml, saveFn, saveLabel='Salvar'){
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.getElementById('modal-save-btn').textContent = saveLabel;
+  if(saveFn){
+    document.getElementById('modal-save-btn').style.display = '';
+    modalSaveFn = saveFn;
+    document.getElementById('modal-save-btn').onclick = saveFn;
+  } else {
+    document.getElementById('modal-save-btn').style.display = 'none';
+  }
+  document.getElementById('modal-footer').querySelector('.btn-cancel').textContent = saveFn ? 'Cancelar' : 'Fechar';
+  document.getElementById('modal-bg').style.display = 'flex';
+}
+window.closeModal = function(){ document.getElementById('modal-bg').style.display = 'none'; };
+
+// ─── HELPERS ──────────────────────────────────────────────────────
+function ytId(url){
+  if(!url) return null;
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+  return m ? m[1] : null;
+}
+function driveId(url){
+  if(!url) return null;
+  const m = url.match(/\/file\/d\/([^/]+)/);
+  return m ? m[1] : null;
+}
+function ytEmbed(url){
+  const id = ytId(url);
+  return id ? `https://www.youtube.com/embed/${id}?rel=0` : null;
+}
+function driveEmbed(url){
+  const id = driveId(url);
+  return id ? `https://drive.google.com/file/d/${id}/preview` : url;
+}
+
+// ─── RENDER: HOME ─────────────────────────────────────────────────
+async function renderHome(){
+  currentScreen = 'home';
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = '<div class="spinner" style="margin:60px auto"></div>';
+
+  const isAdmin = userProfile?.role === 'admin';
+  const tabs = isAdmin
+    ? `<div class="tabs">
+        <button class="tab-btn active" id="tab-cursos" onclick="switchTab('cursos')">📚 Cursos</button>
+        <button class="tab-btn" id="tab-progresso" onclick="switchTab('progresso')">📊 Progresso</button>
+        <button class="tab-btn" id="tab-admin" onclick="switchTab('admin')">⚙️ Admin</button>
+       </div>`
+    : `<div class="tabs">
+        <button class="tab-btn active" id="tab-cursos" onclick="switchTab('cursos')">📚 Meus Cursos</button>
+        <button class="tab-btn" id="tab-progresso" onclick="switchTab('progresso')">🏆 Meus Certificados</button>
+       </div>`;
+
+  mc.innerHTML = tabs + '<div id="tab-content"></div>';
+  switchTab('cursos');
+}
+
+window.switchTab = async function(tab){
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`tab-${tab}`);
+  if(btn) btn.classList.add('active');
+  const tc = document.getElementById('tab-content');
+  tc.innerHTML = '<div class="spinner" style="margin:40px auto"></div>';
+  if(tab==='cursos') await renderCursos(tc);
+  else if(tab==='progresso') await renderProgresso(tc);
+  else if(tab==='admin') await renderAdmin(tc);
+};
+
+// ─── CURSOS ───────────────────────────────────────────────────────
+async function renderCursos(container){
+  const snap = await getDocs(query(collection(db,'cursos'), orderBy('ordem')));
+  const cursos = [];
+  snap.forEach(d => cursos.push({id:d.id,...d.data()}));
+
+  const ativos = userProfile?.role==='admin' ? cursos : cursos.filter(c=>c.ativo);
+
+  if(!ativos.length){
+    container.innerHTML = '<p style="color:var(--text2);text-align:center;padding:60px">Nenhum curso disponível ainda.</p>';
+    return;
+  }
+
+  const progSnap = await getDocs(collection(db,'progresso',currentUser.uid,'cursos'));
+  const progMap = {};
+  progSnap.forEach(d => progMap[d.id] = d.data());
+
+  let html = '<div class="courses-grid">';
+  for(const c of ativos){
+    const prog = progMap[c.id];
+    const pct = prog?.percentual || 0;
+    const done = prog?.concluido;
+    const thumb = c.thumbnail
+      ? `<img src="${c.thumbnail}" onerror="this.parentElement.innerHTML='📖'">`
+      : '📖';
+    html += `
+    <div class="course-card" onclick="openCourse('${c.id}')">
+      <div class="course-thumb">${thumb}
+        ${done ? '<span class="course-badge">✓ Concluído</span>' : ''}
+        ${!c.ativo ? '<span class="course-badge" style="background:#e74c3c">Rascunho</span>' : ''}
+      </div>
+      <div class="course-body">
+        <div class="course-title">${c.titulo}</div>
+        <div class="course-desc">${c.descricao||''}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="progress-text">${pct}% concluído</div>
+      </div>
+    </div>`;
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ─── OPEN COURSE ──────────────────────────────────────────────────
+window.openCourse = async function(courseId){
+  currentScreen = 'course';
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = '<div class="spinner" style="margin:60px auto"></div>';
+
+  const [courseSnap, modsSnap] = await Promise.all([
+    getDoc(doc(db,'cursos',courseId)),
+    getDocs(query(collection(db,'cursos',courseId,'modulos'), orderBy('ordem')))
+  ]);
+  const course = {id:courseId, ...courseSnap.data()};
+  const mods = [];
+  modsSnap.forEach(d => mods.push({id:d.id,...d.data()}));
+  currentCourse = course;
+
+  const progSnap = await getDocs(collection(db,'progresso',currentUser.uid,'cursos',courseId,'modulos'));
+  const progMap = {};
+  progSnap.forEach(d => progMap[d.id] = d.data());
+
+  let html = `
+  <button class="back-btn" onclick="renderHome()">← Voltar</button>
+  <div class="course-header">
+    <h2>${course.titulo}</h2>
+    <p>${course.descricao||''}</p>
+  </div>
+  <div class="section-title">📋 Módulos</div>
+  <div class="modules-list">`;
+
+  mods.forEach((m,i)=>{
+    const mp = progMap[m.id];
+    const done = mp?.concluido;
+    html += `
+    <div class="module-item ${done?'done':''}" onclick="openModule('${courseId}','${m.id}')">
+      <div class="mod-num ${done?'done':''}">${done?'✓':(i+1)}</div>
+      <div class="mod-info">
+        <div class="mod-title">${m.titulo}</div>
+        <div class="mod-meta">${m.temQuiz?'🧠 Tem quiz · ':''} ${m.duracaoMin||''}${m.duracaoMin?' min':''}</div>
+      </div>
+      <div class="mod-arrow">›</div>
+    </div>`;
+  });
+
+  html += '</div>';
+  mc.innerHTML = html;
+};
+
+// ─── OPEN MODULE ──────────────────────────────────────────────────
+window.openModule = async function(courseId, moduleId){
+  currentScreen = 'module';
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = '<div class="spinner" style="margin:60px auto"></div>';
+
+  const modSnap = await getDoc(doc(db,'cursos',courseId,'modulos',moduleId));
+  const m = {id:moduleId, ...modSnap.data()};
+  currentModule = m;
+
+  const progRef = doc(db,'progresso',currentUser.uid,'cursos',courseId,'modulos',moduleId);
+  const progSnap = await getDoc(progRef);
+  const prog = progSnap.exists() ? progSnap.data() : {};
+
+  let videoHtml = '';
+  if(m.videoUrl){
+    const embed = ytEmbed(m.videoUrl);
+    if(embed){
+      videoHtml = `<div class="video-container"><iframe src="${embed}" frameborder="0" allowfullscreen allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture"></iframe></div>`;
+    } else {
+      videoHtml = `<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;text-align:center"><p style="color:var(--text2)">🎬 <a href="${m.videoUrl}" target="_blank">Abrir vídeo</a></p></div>`;
+    }
+  }
+
+  let pdfHtml = '';
+  if(m.pdfUrl){
+    const embed = driveEmbed(m.pdfUrl);
+    pdfHtml = `<div class="pdf-section">
+      <div class="pdf-header">📄 Material de Apoio</div>
+      <iframe class="pdf-frame" src="${embed}" allowfullscreen></iframe>
+    </div>`;
+  }
+
+  let contentHtml = '';
+  if(m.conteudo){
+    contentHtml = `<div class="content-section"><h3>📝 Conteúdo</h3><p>${m.conteudo.replace(/\n/g,'<br>')}</p></div>`;
+  }
+
+  const alreadyDone = prog.concluido;
+  const quizDone = prog.quizRealizado;
+  const btnLabel = m.temQuiz && !quizDone
+    ? (alreadyDone ? '✓ Módulo Concluído' : 'Fazer Quiz e Concluir')
+    : (alreadyDone ? '✓ Módulo Concluído' : 'Marcar como Concluído');
+
+  mc.innerHTML = `
+  <div class="mod-view-container">
+    <button class="back-btn" onclick="openCourse('${courseId}')">← ${currentCourse?.titulo||'Curso'}</button>
+    <div style="margin-bottom:20px">
+      <h2 style="font-size:1.2rem;color:var(--gold)">${m.titulo}</h2>
+    </div>
+    ${videoHtml}
+    ${pdfHtml}
+    ${contentHtml}
+    <button class="complete-btn" id="complete-btn" onclick="completeModule('${courseId}','${moduleId}')" ${alreadyDone?'disabled':''}>
+      ${btnLabel}
+    </button>
+  </div>`;
+};
+
+// ─── COMPLETE MODULE ──────────────────────────────────────────────
+window.completeModule = async function(courseId, moduleId){
+  const m = currentModule;
+  if(m?.temQuiz){
+    await startQuiz(courseId, moduleId);
+  } else {
+    await markModuleDone(courseId, moduleId, null);
+    toast('Módulo concluído! ✓', 'ok');
+    await openCourse(courseId);
+  }
+};
+
+async function markModuleDone(courseId, moduleId, quizNota){
+  const modRef = doc(db,'progresso',currentUser.uid,'cursos',courseId,'modulos',moduleId);
+  await setDoc(modRef, { concluido:true, quizRealizado: quizNota!==null, quizNota: quizNota||0, concluidoEm: serverTimestamp() }, {merge:true});
+  await updateCourseProgress(courseId);
+}
+
+async function updateCourseProgress(courseId){
+  const modsSnap = await getDocs(collection(db,'cursos',courseId,'modulos'));
+  const total = modsSnap.size;
+  const progSnap = await getDocs(collection(db,'progresso',currentUser.uid,'cursos',courseId,'modulos'));
+  let done = 0;
+  progSnap.forEach(d => { if(d.data().concluido) done++; });
+  const pct = total ? Math.round((done/total)*100) : 0;
+  const concluido = pct===100;
+  const courseRef = doc(db,'progresso',currentUser.uid,'cursos',courseId);
+  await setDoc(courseRef, {
+    percentual:pct, concluido,
+    iniciado:true,
+    ...(concluido ? { certificadoEmitidoEm: serverTimestamp() } : {})
+  }, {merge:true});
+}
+
+// ─── QUIZ ─────────────────────────────────────────────────────────
+async function startQuiz(courseId, moduleId){
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = '<div class="spinner" style="margin:60px auto"></div>';
+
+  const snap = await getDocs(query(collection(db,'cursos',courseId,'modulos',moduleId,'quiz'), orderBy('ordem')));
+  const questions = [];
+  snap.forEach(d => questions.push({id:d.id,...d.data()}));
+
+  if(!questions.length){
+    // no quiz questions — just complete
+    await markModuleDone(courseId, moduleId, 100);
+    toast('Módulo concluído! ✓');
+    await openCourse(courseId);
+    return;
+  }
+
+  quizData = { questions, answers: new Array(questions.length).fill(null), current:0, courseId, moduleId };
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const { questions, answers, current, courseId, moduleId } = quizData;
+  const q = questions[current];
+  const total = questions.length;
+  const pct = Math.round((current/total)*100);
+
+  let optsHtml = '';
+  q.opcoes.forEach((o,i)=>{
+    const sel = answers[current]===i;
+    optsHtml += `<button class="option-btn ${sel?'selected':''}" onclick="selectAnswer(${i})">${o.texto}</button>`;
+  });
+
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = `
+  <div class="quiz-container">
+    <button class="back-btn" onclick="openModule('${courseId}','${moduleId}')">← Voltar</button>
+    <div class="quiz-header">
+      <h2>🧠 Quiz</h2>
+      <p>Questão ${current+1} de ${total}</p>
+    </div>
+    <div class="quiz-progress"><div class="quiz-progress-fill" style="width:${pct}%"></div></div>
+    <div class="question-card">
+      <div class="question-text">${q.pergunta}</div>
+      <div class="options-list">${optsHtml}</div>
+    </div>
+    <div class="quiz-nav">
+      <button class="btn-sec" onclick="quizPrev()" ${current===0?'disabled':''}>← Anterior</button>
+      ${current<total-1
+        ? `<button class="btn-gold" onclick="quizNext()">Próxima →</button>`
+        : `<button class="btn-gold" onclick="quizSubmit()">Finalizar</button>`}
+    </div>
+  </div>`;
+}
+
+window.selectAnswer = function(i){
+  quizData.answers[quizData.current] = i;
+  renderQuestion();
+};
+window.quizNext = function(){
+  if(quizData.answers[quizData.current]===null){ toast('Selecione uma opção','err'); return; }
+  quizData.current++;
+  renderQuestion();
+};
+window.quizPrev = function(){
+  if(quizData.current>0){ quizData.current--; renderQuestion(); }
+};
+window.quizSubmit = async function(){
+  if(quizData.answers[quizData.current]===null){ toast('Selecione uma opção','err'); return; }
+  const { questions, answers, courseId, moduleId } = quizData;
+  let correct = 0;
+  questions.forEach((q,i)=>{
+    const chosen = answers[i];
+    if(chosen!==null && q.opcoes[chosen]?.correta) correct++;
+  });
+  const score = Math.round((correct/questions.length)*100);
+  const minScore = 70;
+  const passed = score >= minScore;
+
+  if(passed){
+    await markModuleDone(courseId, moduleId, score);
+  }
+
+  renderQuizResult(score, passed, correct, questions.length, courseId, moduleId);
+};
+
+function renderQuizResult(score, passed, correct, total, courseId, moduleId){
+  const mc = document.getElementById('main-content');
+  mc.innerHTML = `
+  <div class="quiz-container">
+    <div class="quiz-result">
+      <div class="result-icon">${passed?'🏆':'😔'}</div>
+      <div class="result-score">${score}%</div>
+      <div style="color:var(--text2);margin:4px 0">${correct} de ${total} corretas</div>
+      <div class="result-msg">${passed
+        ? 'Parabéns! Você foi aprovado neste módulo.'
+        : `Você precisa de pelo menos 70% para passar. Tente novamente!`}
+      </div>
+      ${passed
+        ? `<button class="btn-gold" onclick="openCourse('${courseId}')">Continuar →</button>`
+        : `<button class="btn-gold" onclick="openModule('${courseId}','${moduleId}')">↩ Revisar e Tentar Novamente</button>`}
+    </div>
+  </div>`;
+}
+
+// ─── PROGRESSO / CERTIFICADOS ─────────────────────────────────────
+async function renderProgresso(container){
+  const isAdmin = userProfile?.role==='admin';
+  if(isAdmin){
+    await renderProgressoAdmin(container);
+  } else {
+    await renderCertificados(container);
+  }
+}
+
+async function renderCertificados(container){
+  const [progSnap, cursosSnap] = await Promise.all([
+    getDocs(collection(db,'progresso',currentUser.uid,'cursos')),
+    getDocs(query(collection(db,'cursos'), orderBy('ordem')))
+  ]);
+  const cursosMap = {};
+  cursosSnap.forEach(d => cursosMap[d.id] = d.data());
+  const certs = [];
+  progSnap.forEach(d => {
+    const p = d.data();
+    if(p.concluido) certs.push({id:d.id,...p, curso:cursosMap[d.id]});
+  });
+
+  if(!certs.length){
+    container.innerHTML = `<p style="color:var(--text2);text-align:center;padding:60px">Conclua cursos para ganhar certificados! 🏆</p>`;
+    return;
+  }
+
+  let html = '<div class="section-title">🏆 Meus Certificados</div><div class="cert-list">';
+  certs.forEach(c => {
+    const d = c.certificadoEmitidoEm?.toDate?.() || new Date();
+    html += `
+    <div class="cert-item">
+      <div class="cert-icon">🎓</div>
+      <div class="cert-info">
+        <h4>${c.curso?.titulo||'Curso'}</h4>
+        <p>Concluído em ${d.toLocaleDateString('pt-BR')}</p>
+      </div>
+      <div class="cert-actions">
+        <button class="btn-gold" style="padding:7px 14px;font-size:.82rem;border-radius:7px" onclick="showCertificate('${c.id}')">Ver</button>
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+window.showCertificate = async function(courseId){
+  const mc = document.getElementById('main-content');
+  const [progSnap, courseSnap] = await Promise.all([
+    getDoc(doc(db,'progresso',currentUser.uid,'cursos',courseId)),
+    getDoc(doc(db,'cursos',courseId))
+  ]);
+  const prog = progSnap.data();
+  const course = courseSnap.data();
+  const date = prog.certificadoEmitidoEm?.toDate?.() || new Date();
+
+  mc.innerHTML = `
+  <button class="back-btn" onclick="switchTab('progresso')">← Meus Certificados</button>
+  <div class="cert-container" id="cert-print">
+    <div class="cert-logo"><img src="logo.png" alt="Falcioni" onerror="this.style.display='none'" style="height:50px"></div>
+    <div class="cert-title">Certificado de Conclusão</div>
+    <div class="cert-divider"></div>
+    <div class="cert-main">Certificamos que</div>
+    <div class="cert-name">${userProfile?.name || currentUser.email}</div>
+    <div class="cert-main">concluiu com êxito o curso</div>
+    <div class="cert-course">${course?.titulo||''}</div>
+    <div class="cert-divider"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px">
+      <div style="text-align:left">
+        <div style="font-size:.75rem;color:var(--text2)">Emitido em</div>
+        <div style="font-size:.9rem">${date.toLocaleDateString('pt-BR')}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.75rem;color:var(--text2)">Falcioni Consultoria</div>
+        <div style="font-size:.85rem;color:var(--gold)">Universidade Corporativa</div>
+      </div>
+    </div>
+  </div>
+  <div style="text-align:center;margin-top:16px">
+    <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  </div>`;
+};
+
+async function renderProgressoAdmin(container){
+  const [usuariosSnap, cursosSnap] = await Promise.all([
+    getDocs(collection(db,'usuarios')),
+    getDocs(query(collection(db,'cursos'), orderBy('ordem')))
+  ]);
+  const usuarios = [];
+  usuariosSnap.forEach(d => usuarios.push({uid:d.id,...d.data()}));
+  const cursos = [];
+  cursosSnap.forEach(d => cursos.push({id:d.id,...d.data()}));
+
+  let rows = '';
+  for(const u of usuarios){
+    const progSnap = await getDocs(collection(db,'progresso',u.uid,'cursos'));
+    let concluidos = 0;
+    let emProgresso = 0;
+    progSnap.forEach(d=>{
+      const p = d.data();
+      if(p.concluido) concluidos++;
+      else if(p.iniciado) emProgresso++;
+    });
+    rows += `<tr>
+      <td>${u.name||u.email}</td>
+      <td>${u.email}</td>
+      <td><span class="status-dot ${u.role==='admin'?'on':'off'}"></span>${u.role}</td>
+      <td>${concluidos}/${cursos.length}</td>
+      <td><button class="action-btn" onclick="makeAdmin('${u.uid}','${u.role}')">
+        ${u.role==='admin'?'Rebaixar':'Tornar Admin'}
+      </button></td>
+    </tr>`;
+  }
+
+  container.innerHTML = `
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">👥 Colaboradores</div>
+      <button class="btn-add" onclick="modalNovoColaborador()">+ Criar Conta</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Cursos</th><th>Ação</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">Nenhum usuário</td></tr>'}</tbody>
+    </table>
+  </div>`;
+}
+
+window.makeAdmin = async function(uid, currentRole){
+  const newRole = currentRole==='admin' ? 'colaborador' : 'admin';
+  await updateDoc(doc(db,'usuarios',uid), { role:newRole });
+  toast(`Perfil alterado para ${newRole}`);
+  switchTab('progresso');
+};
+
+window.modalNovoColaborador = function(){
+  openModal('Criar Conta de Colaborador',`
+  <div class="field"><label>Nome</label><input id="nc-name" type="text" placeholder="Nome completo"></div>
+  <div class="field"><label>E-mail</label><input id="nc-email" type="email" placeholder="email@falcioni.com.br"></div>
+  <div class="field"><label>Senha Inicial</label><input id="nc-pass" type="text" placeholder="Mínimo 6 caracteres"></div>
+  <p style="font-size:.8rem;color:var(--text2);margin-top:8px">⚠️ O colaborador deve trocar a senha no primeiro acesso.</p>
+  `, () => {
+    const name = document.getElementById('nc-name').value.trim();
+    const email = document.getElementById('nc-email').value.trim();
+    const pass = document.getElementById('nc-pass').value;
+    if(!name||!email||!pass){ toast('Preencha todos os campos','err'); return; }
+    if(pass.length<6){ toast('Senha mínimo 6 caracteres','err'); return; }
+    toast('Use o Console Firebase para criar contas. Authentication → Users → Add User','err');
+  });
+};
+
+// ─── ADMIN ────────────────────────────────────────────────────────
+async function renderAdmin(container){
+  let html = `
+  <div class="tabs" style="margin-bottom:20px">
+    <button class="tab-btn ${adminTab==='cursos'?'active':''}" onclick="switchAdminTab('cursos')">📚 Cursos</button>
+    <button class="tab-btn ${adminTab==='modulos'?'active':''}" onclick="switchAdminTab('modulos')">📋 Módulos</button>
+  </div>
+  <div id="admin-tab-content"></div>`;
+  container.innerHTML = html;
+  switchAdminTab(adminTab);
+}
+
+window.switchAdminTab = async function(tab){
+  adminTab = tab;
+  document.querySelectorAll('#tab-content .tabs .tab-btn').forEach(b=>{
+    b.classList.toggle('active', b.textContent.includes(tab==='cursos'?'Cursos':'Módulos'));
+  });
+  const atc = document.getElementById('admin-tab-content');
+  if(!atc) return;
+  atc.innerHTML = '<div class="spinner" style="margin:30px auto"></div>';
+  if(tab==='cursos') await renderAdminCursos(atc);
+  else await renderAdminModulos(atc);
+};
+
+async function renderAdminCursos(container){
+  const snap = await getDocs(query(collection(db,'cursos'), orderBy('ordem')));
+  const cursos = [];
+  snap.forEach(d => cursos.push({id:d.id,...d.data()}));
+
+  let rows = cursos.map(c=>`
+  <tr>
+    <td>${c.ordem}</td>
+    <td>${c.titulo}</td>
+    <td>${c.descricao?.substring(0,60)||''}...</td>
+    <td><span class="status-dot ${c.ativo?'on':'off'}"></span>${c.ativo?'Ativo':'Rascunho'}</td>
+    <td style="display:flex;gap:6px">
+      <button class="action-btn" onclick="modalEditCurso('${c.id}')">✏️</button>
+      <button class="action-btn" onclick="toggleCurso('${c.id}',${c.ativo})">${c.ativo?'Ocultar':'Publicar'}</button>
+      <button class="action-btn danger" onclick="deleteCurso('${c.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+
+  container.innerHTML = `
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">📚 Cursos</div>
+      <button class="btn-add" onclick="modalNovoCurso()">+ Novo Curso</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>#</th><th>Título</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">Nenhum curso</td></tr>'}</tbody>
+    </table>
+  </div>`;
+}
+
+async function renderAdminModulos(container){
+  const cursosSnap = await getDocs(query(collection(db,'cursos'), orderBy('ordem')));
+  const cursos = [];
+  cursosSnap.forEach(d => cursos.push({id:d.id,...d.data()}));
+
+  if(!cursos.length){
+    container.innerHTML = '<p style="color:var(--text2);padding:20px">Crie cursos primeiro.</p>';
+    return;
+  }
+
+  let selectOpts = cursos.map(c=>`<option value="${c.id}">${c.titulo}</option>`).join('');
+  container.innerHTML = `
+  <div class="field" style="margin-bottom:16px">
+    <label>Selecione o Curso</label>
+    <select id="mod-course-sel" onchange="loadModulos(this.value)" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%">
+      ${selectOpts}
+    </select>
+  </div>
+  <div id="modulos-list"></div>`;
+  loadModulos(cursos[0].id);
+}
+
+window.loadModulos = async function(courseId){
+  const container = document.getElementById('modulos-list');
+  if(!container) return;
+  container.innerHTML = '<div class="spinner" style="margin:20px auto"></div>';
+  const snap = await getDocs(query(collection(db,'cursos',courseId,'modulos'), orderBy('ordem')));
+  const mods = [];
+  snap.forEach(d => mods.push({id:d.id,...d.data()}));
+
+  let rows = mods.map(m=>`
+  <tr>
+    <td>${m.ordem}</td>
+    <td>${m.titulo}</td>
+    <td>${m.videoUrl?'🎬':''} ${m.pdfUrl?'📄':''} ${m.temQuiz?'🧠':''}</td>
+    <td style="display:flex;gap:6px">
+      <button class="action-btn" onclick="modalEditModulo('${courseId}','${m.id}')">✏️</button>
+      <button class="action-btn" onclick="modalManageQuiz('${courseId}','${m.id}','${m.titulo}')">🧠 Quiz</button>
+      <button class="action-btn danger" onclick="deleteModulo('${courseId}','${m.id}')">🗑</button>
+    </td>
+  </tr>`).join('');
+
+  container.innerHTML = `
+  <div class="admin-card">
+    <div class="admin-card-header">
+      <div class="admin-card-title">📋 Módulos</div>
+      <button class="btn-add" onclick="modalNovoModulo('${courseId}')">+ Novo Módulo</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr><th>#</th><th>Título</th><th>Conteúdo</th><th>Ações</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px">Nenhum módulo</td></tr>'}</tbody>
+    </table>
+  </div>`;
+};
+
+// ─── CRUD CURSOS ──────────────────────────────────────────────────
+window.modalNovoCurso = function(){
+  openModal('Novo Curso',`
+  <div class="field"><label>Título</label><input id="c-titulo" type="text" placeholder="Nome do curso"></div>
+  <div class="field"><label>Descrição</label><textarea id="c-desc" placeholder="Descreva o curso"></textarea></div>
+  <div class="field"><label>Thumbnail (URL de imagem)</label><input id="c-thumb" type="text" placeholder="https://..."></div>
+  <div class="field"><label>Ordem</label><input id="c-ordem" type="number" value="1" min="1"></div>
+  `, async () => {
+    const titulo = document.getElementById('c-titulo').value.trim();
+    if(!titulo){ toast('Digite o título','err'); return; }
+    await addDoc(collection(db,'cursos'), {
+      titulo,
+      descricao: document.getElementById('c-desc').value.trim(),
+      thumbnail: document.getElementById('c-thumb').value.trim(),
+      ordem: parseInt(document.getElementById('c-ordem').value)||1,
+      ativo: false,
+      criadoEm: serverTimestamp()
+    });
+    toast('Curso criado!');
+    closeModal();
+    switchAdminTab('cursos');
+  });
+};
+
+window.modalEditCurso = async function(id){
+  const snap = await getDoc(doc(db,'cursos',id));
+  const c = snap.data();
+  openModal('Editar Curso',`
+  <div class="field"><label>Título</label><input id="c-titulo" type="text" value="${c.titulo||''}"></div>
+  <div class="field"><label>Descrição</label><textarea id="c-desc">${c.descricao||''}</textarea></div>
+  <div class="field"><label>Thumbnail (URL)</label><input id="c-thumb" type="text" value="${c.thumbnail||''}"></div>
+  <div class="field"><label>Ordem</label><input id="c-ordem" type="number" value="${c.ordem||1}" min="1"></div>
+  `, async () => {
+    await updateDoc(doc(db,'cursos',id), {
+      titulo: document.getElementById('c-titulo').value.trim(),
+      descricao: document.getElementById('c-desc').value.trim(),
+      thumbnail: document.getElementById('c-thumb').value.trim(),
+      ordem: parseInt(document.getElementById('c-ordem').value)||1,
+    });
+    toast('Curso atualizado!');
+    closeModal();
+    switchAdminTab('cursos');
+  });
+};
+
+window.toggleCurso = async function(id, current){
+  await updateDoc(doc(db,'cursos',id), { ativo: !current });
+  toast(!current ? 'Curso publicado!' : 'Curso ocultado');
+  switchAdminTab('cursos');
+};
+
+window.deleteCurso = async function(id){
+  if(!confirm('Excluir este curso?')) return;
+  await deleteDoc(doc(db,'cursos',id));
+  toast('Curso excluído');
+  switchAdminTab('cursos');
+};
+
+// ─── CRUD MÓDULOS ─────────────────────────────────────────────────
+function moduloForm(m={}){
+  return `
+  <div class="field"><label>Título</label><input id="m-titulo" type="text" value="${m.titulo||''}" placeholder="Título do módulo"></div>
+  <div class="field"><label>Ordem</label><input id="m-ordem" type="number" value="${m.ordem||1}" min="1"></div>
+  <div class="field"><label>🎬 URL do Vídeo (YouTube)</label><input id="m-video" type="text" value="${m.videoUrl||''}" placeholder="https://youtube.com/watch?v=..."></div>
+  <div class="field"><label>📄 URL do PDF (Google Drive)</label><input id="m-pdf" type="text" value="${m.pdfUrl||''}" placeholder="https://drive.google.com/file/d/..."></div>
+  <div class="field"><label>Duração (minutos)</label><input id="m-dur" type="number" value="${m.duracaoMin||''}" placeholder="30"></div>
+  <div class="field"><label>Conteúdo (texto)</label><textarea id="m-conteudo" placeholder="Texto de apoio para o módulo...">${m.conteudo||''}</textarea></div>
+  <div class="field" style="display:flex;align-items:center;gap:10px">
+    <input type="checkbox" id="m-quiz" ${m.temQuiz?'checked':''} style="width:auto">
+    <label for="m-quiz" style="text-transform:none;font-size:.9rem">Este módulo tem quiz</label>
+  </div>`;
+}
+
+window.modalNovoModulo = function(courseId){
+  openModal('Novo Módulo', moduloForm(), async () => {
+    const titulo = document.getElementById('m-titulo').value.trim();
+    if(!titulo){ toast('Digite o título','err'); return; }
+    await addDoc(collection(db,'cursos',courseId,'modulos'), {
+      titulo,
+      ordem: parseInt(document.getElementById('m-ordem').value)||1,
+      videoUrl: document.getElementById('m-video').value.trim(),
+      pdfUrl: document.getElementById('m-pdf').value.trim(),
+      duracaoMin: parseInt(document.getElementById('m-dur').value)||0,
+      conteudo: document.getElementById('m-conteudo').value.trim(),
+      temQuiz: document.getElementById('m-quiz').checked,
+      criadoEm: serverTimestamp()
+    });
+    toast('Módulo criado!');
+    closeModal();
+    loadModulos(courseId);
+  });
+};
+
+window.modalEditModulo = async function(courseId, modId){
+  const snap = await getDoc(doc(db,'cursos',courseId,'modulos',modId));
+  const m = snap.data();
+  openModal('Editar Módulo', moduloForm(m), async () => {
+    await updateDoc(doc(db,'cursos',courseId,'modulos',modId), {
+      titulo: document.getElementById('m-titulo').value.trim(),
+      ordem: parseInt(document.getElementById('m-ordem').value)||1,
+      videoUrl: document.getElementById('m-video').value.trim(),
+      pdfUrl: document.getElementById('m-pdf').value.trim(),
+      duracaoMin: parseInt(document.getElementById('m-dur').value)||0,
+      conteudo: document.getElementById('m-conteudo').value.trim(),
+      temQuiz: document.getElementById('m-quiz').checked,
+    });
+    toast('Módulo atualizado!');
+    closeModal();
+    loadModulos(courseId);
+  });
+};
+
+window.deleteModulo = async function(courseId, modId){
+  if(!confirm('Excluir este módulo?')) return;
+  await deleteDoc(doc(db,'cursos',courseId,'modulos',modId));
+  toast('Módulo excluído');
+  loadModulos(courseId);
+};
+
+// ─── QUIZ ADMIN ───────────────────────────────────────────────────
+window.modalManageQuiz = async function(courseId, modId, modTitle){
+  const snap = await getDocs(query(collection(db,'cursos',courseId,'modulos',modId,'quiz'), orderBy('ordem')));
+  const questions = [];
+  snap.forEach(d => questions.push({id:d.id,...d.data()}));
+
+  let qHtml = questions.map((q,i)=>`
+  <div style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px">
+    <div style="font-size:.85rem;font-weight:600;margin-bottom:6px">${i+1}. ${q.pergunta}</div>
+    ${q.opcoes.map(o=>`<div style="font-size:.8rem;color:${o.correta?'var(--green)':'var(--text2)'};padding:2px 0">${o.correta?'✓':'○'} ${o.texto}</div>`).join('')}
+    <button class="action-btn danger" style="margin-top:8px;font-size:.75rem" onclick="deleteQuestion('${courseId}','${modId}','${q.id}','${modTitle}')">Excluir</button>
+  </div>`).join('');
+
+  const body = `
+  ${qHtml || '<p style="color:var(--text2);margin-bottom:16px">Nenhuma questão ainda.</p>'}
+  <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+    <div style="font-weight:700;margin-bottom:12px;font-size:.9rem">➕ Adicionar Questão</div>
+    <div class="field"><label>Pergunta</label><textarea id="nq-perg" placeholder="Digite a pergunta..."></textarea></div>
+    <div class="field"><label>Opção A</label><input id="nq-a" type="text" placeholder="Opção A"></div>
+    <div class="field"><label>Opção B</label><input id="nq-b" type="text" placeholder="Opção B"></div>
+    <div class="field"><label>Opção C</label><input id="nq-c" type="text" placeholder="Opção C (opcional)"></div>
+    <div class="field"><label>Opção D</label><input id="nq-d" type="text" placeholder="Opção D (opcional)"></div>
+    <div class="field"><label>Resposta Correta</label>
+      <select id="nq-correta" style="background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);width:100%">
+        <option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option>
+      </select>
+    </div>
+    <div class="field"><label>Ordem</label><input id="nq-ordem" type="number" value="${questions.length+1}" min="1"></div>
+  </div>`;
+
+  openModal(`🧠 Quiz — ${modTitle}`, body, async () => {
+    const perg = document.getElementById('nq-perg').value.trim();
+    const a = document.getElementById('nq-a').value.trim();
+    const b = document.getElementById('nq-b').value.trim();
+    if(!perg||!a||!b){ toast('Preencha a pergunta e pelo menos A e B','err'); return; }
+    const c = document.getElementById('nq-c').value.trim();
+    const d = document.getElementById('nq-d').value.trim();
+    const corretaIdx = parseInt(document.getElementById('nq-correta').value);
+    const opcoes = [{texto:a},{texto:b}];
+    if(c) opcoes.push({texto:c});
+    if(d) opcoes.push({texto:d});
+    opcoes.forEach((o,i) => o.correta = i===corretaIdx);
+
+    await addDoc(collection(db,'cursos',courseId,'modulos',modId,'quiz'), {
+      pergunta: perg,
+      opcoes,
+      ordem: parseInt(document.getElementById('nq-ordem').value)||questions.length+1,
+    });
+
+    // ensure module has temQuiz=true
+    await updateDoc(doc(db,'cursos',courseId,'modulos',modId), { temQuiz:true });
+
+    toast('Questão adicionada!');
+    closeModal();
+    modalManageQuiz(courseId, modId, modTitle);
+  }, 'Adicionar Questão');
+};
+
+window.deleteQuestion = async function(courseId, modId, qId, modTitle){
+  if(!confirm('Excluir esta questão?')) return;
+  await deleteDoc(doc(db,'cursos',courseId,'modulos',modId,'quiz',qId));
+  toast('Questão excluída');
+  closeModal();
+  modalManageQuiz(courseId, modId, modTitle);
+};
+
+window.renderHome = renderHome;
+</script>
+
+<!-- SERVICE WORKER -->
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js').catch(()=>{});
+}
+document.getElementById('login-email').focus();
+</script>
+</body>
+</html>
