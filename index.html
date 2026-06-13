@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Falcioni | Universidade Corporativa</title>
+<title>DocFal | Evolua com conhecimento</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1A2F4A">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -329,13 +329,13 @@ a{color:var(--gold);text-decoration:none}
   <div class="login-left">
     <div class="login-brand">
       <img src="logo.png" alt="Falcioni" onerror="this.style.display='none'">
-      <h1>Falcioni</h1>
-      <p>Universidade Corporativa — desenvolva seu potencial com os melhores treinamentos internos.</p>
+      <h1>DocFal</h1>
+      <p>Evolua com conhecimento — desenvolva seu potencial com os melhores treinamentos internos.</p>
     </div>
     <div class="login-features">
       <div class="login-feature">
         <div class="login-feature-icon">📚</div>
-        <span>Cursos em vídeo e material de apoio</span>
+        <span>Materiais em vídeo e documentos de apoio</span>
       </div>
       <div class="login-feature">
         <div class="login-feature-icon">🧠</div>
@@ -366,7 +366,7 @@ a{color:var(--gold);text-decoration:none}
         <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
       </div>
       <button class="btn-login" onclick="doLogin()">Entrar na Plataforma →</button>
-      <div class="login-footer">Acesso restrito a colaboradores Falcioni Consultoria</div>
+      <div class="login-footer">Acesso restrito a colaboradores DocFal</div>
     </div>
   </div>
 
@@ -381,8 +381,8 @@ a{color:var(--gold);text-decoration:none}
       <div class="sidebar-logo">
         <img src="logo.png" alt="Falcioni" onerror="this.style.display='none'">
         <div class="sidebar-logo-text">
-          <strong>FALCIONI</strong>
-          <span>Univ. Corporativa</span>
+          <strong>DOCFAL</strong>
+          <span>Evolua com conhecimento</span>
         </div>
       </div>
 
@@ -392,7 +392,7 @@ a{color:var(--gold);text-decoration:none}
           <span class="nav-icon">🏠</span> Dashboard
         </div>
         <div class="nav-item" id="nav-cursos" onclick="navTo('cursos')">
-          <span class="nav-icon">📚</span> Cursos
+          <span class="nav-icon">📚</span> Materiais
         </div>
         <div class="nav-item" id="nav-certificados" onclick="navTo('certificados')">
           <span class="nav-icon">🏆</span> Certificados
@@ -403,7 +403,7 @@ a{color:var(--gold);text-decoration:none}
         <div class="nav-sep"></div>
         <div class="nav-label">Admin</div>
         <div class="nav-item admin-only" id="nav-admin-cursos" onclick="navTo('admin-cursos')" style="display:none">
-          <span class="nav-icon">⚙️</span> Gerenciar Cursos
+          <span class="nav-icon">⚙️</span> Gerenciar Materiais
         </div>
         <div class="nav-item admin-only" id="nav-admin-trilha" onclick="navTo('admin-trilha')" style="display:none">
           <span class="nav-icon">🗺️</span> Gerenciar Trilha
@@ -570,9 +570,9 @@ window.navTo = function(screen){
   const navEl = document.getElementById(`nav-${screen}`);
   if(navEl) navEl.classList.add('active');
   const titles = {
-    dashboard:'Dashboard', cursos:'Cursos', certificados:'Meus Certificados',
+    dashboard:'Dashboard', cursos:'Materiais', certificados:'Meus Certificados',
     trilha:'Trilha de Capacitação',
-    'admin-cursos':'Gerenciar Cursos', 'admin-trilha':'Gerenciar Trilha', 'admin-usuarios':'Colaboradores'
+    'admin-cursos':'Gerenciar Materiais', 'admin-trilha':'Gerenciar Trilha', 'admin-usuarios':'Colaboradores'
   };
   document.getElementById('page-title').textContent = titles[screen] || '';
   const ca = document.getElementById('content-area');
@@ -598,7 +598,74 @@ function driveId(url){
   return m ? m[1] : null;
 }
 function ytEmbed(url){ const id=ytId(url); return id?`https://www.youtube.com/embed/${id}?rel=0`:null; }
-function driveEmbed(url){ const id=driveId(url); return id?`https://drive.google.com/file/d/${id}/preview`:url; }
+
+function driveConvert(url){
+  if(!url) return null;
+  url = url.trim();
+  if(url.includes('/preview') || url.includes('/embed')) return {embed:url, type:'doc', thumbnail:''};
+  let m;
+  // Google Drive file: /file/d/{ID}
+  m = url.match(/\/file\/d\/([^/?#]+)/);
+  if(m) return {embed:`https://drive.google.com/file/d/${m[1]}/preview`, type:'file', id:m[1],
+    thumbnail:`https://drive.google.com/thumbnail?id=${m[1]}&sz=w400`};
+  // Google Drive open?id=
+  m = url.match(/[?&]id=([^&]+)/);
+  if(m && url.includes('drive.google')) return {embed:`https://drive.google.com/file/d/${m[1]}/preview`, type:'file', id:m[1],
+    thumbnail:`https://drive.google.com/thumbnail?id=${m[1]}&sz=w400`};
+  // Google Docs
+  m = url.match(/docs\.google\.com\/document\/d\/([^/?#]+)/);
+  if(m) return {embed:`https://docs.google.com/document/d/${m[1]}/preview`, type:'doc', id:m[1], thumbnail:''};
+  // Google Slides / PPT
+  m = url.match(/docs\.google\.com\/presentation\/d\/([^/?#]+)/);
+  if(m) return {embed:`https://docs.google.com/presentation/d/${m[1]}/embed?start=false&loop=false`, type:'slides', id:m[1],
+    thumbnail:`https://docs.google.com/presentation/d/${m[1]}/export/png`};
+  // Google Sheets
+  m = url.match(/docs\.google\.com\/spreadsheets\/d\/([^/?#]+)/);
+  if(m) return {embed:`https://docs.google.com/spreadsheets/d/${m[1]}/preview`, type:'sheet', id:m[1], thumbnail:''};
+  return null;
+}
+function driveEmbed(url){
+  const r = driveConvert(url);
+  return r ? r.embed : url;
+}
+
+// ─── DRIVE / YT PREVIEW HELPERS ───────────────────────────
+window.previewDrive = function(inputId, badgeId, previewId, raw){
+  const badge   = document.getElementById(badgeId);
+  const preview = document.getElementById(previewId);
+  if(!badge || !preview) return;
+  if(!raw || !raw.trim()){ badge.innerHTML=''; preview.innerHTML=''; return; }
+
+  const result = driveConvert(raw.trim());
+  if(!result){
+    badge.innerHTML = `<span style="color:var(--red)">⚠️ Link não reconhecido — verifique o endereço</span>`;
+    preview.innerHTML = '';
+    // salva o link original mesmo assim
+    return;
+  }
+
+  const tipos = {file:'📄 Arquivo do Drive', doc:'📝 Google Docs / Word', slides:'📊 Slides / PPT', sheet:'📋 Planilha'};
+  badge.innerHTML = `<span style="color:var(--green);font-weight:600">✅ ${tipos[result.type]||'Arquivo'} detectado — link convertido automaticamente</span>`;
+
+  // substitui o valor do input pelo embed correto
+  const input = document.getElementById(inputId);
+  if(input) input.value = result.embed;
+
+  // preenche thumbnail automaticamente se disponível
+  const thumbInput = document.getElementById('c-thumb-auto');
+  if(thumbInput && result.thumbnail) thumbInput.value = result.thumbnail;
+
+  // mini preview
+  preview.innerHTML = `
+    <div style="border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#f8f8f8">
+      <div style="padding:6px 12px;background:var(--primary);color:#fff;font-size:.75rem;font-weight:600">Pré-visualização</div>
+      <iframe src="${result.embed}" style="width:100%;height:220px;border:none" allowfullscreen></iframe>
+    </div>`;
+};
+
+window.previewYt = function(url){
+  // sem preview inline para vídeo — só valida
+};
 
 // ─── DASHBOARD ────────────────────────────────────────────
 async function renderDashboard(ca){
@@ -624,7 +691,7 @@ async function renderDashboard(ca){
     const usersSnap = await getDocs(collection(db,'usuarios'));
     adminStats = `
     <div class="stat-card"><div class="stat-icon si-blue">👥</div><div class="stat-info"><div class="stat-val">${usersSnap.size}</div><div class="stat-label">Colaboradores</div></div></div>
-    <div class="stat-card"><div class="stat-icon si-navy">📚</div><div class="stat-info"><div class="stat-val">${cursos.length}</div><div class="stat-label">Cursos cadastrados</div></div></div>`;
+    <div class="stat-card"><div class="stat-icon si-navy">📚</div><div class="stat-info"><div class="stat-val">${cursos.length}</div><div class="stat-label">Materiais cadastrados</div></div></div>`;
   }
 
   // últimos cursos em progresso
@@ -640,7 +707,8 @@ async function renderDashboard(ca){
     const done = prog?.concluido;
     return `
     <div class="course-card" onclick="openCourse('${c.id}')">
-      <div class="course-thumb">📖
+      <div class="course-thumb" style="${c.thumbnail?`background-image:url('${c.thumbnail}');background-size:cover;background-position:center`:''}">
+        ${!c.thumbnail?'📖':''}
         ${done?'<span class="course-badge">✓ Concluído</span>':''}
         ${!c.ativo?'<span class="course-badge draft">Rascunho</span>':''}
       </div>
@@ -655,7 +723,7 @@ async function renderDashboard(ca){
 
   ca.innerHTML = `
   <div class="stats-grid">
-    <div class="stat-card"><div class="stat-icon si-navy">📚</div><div class="stat-info"><div class="stat-val">${ativos.length}</div><div class="stat-label">Cursos disponíveis</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-navy">📚</div><div class="stat-info"><div class="stat-val">${ativos.length}</div><div class="stat-label">Materiais disponíveis</div></div></div>
     <div class="stat-card"><div class="stat-icon si-blue">📖</div><div class="stat-info"><div class="stat-val">${emProgresso}</div><div class="stat-label">Em progresso</div></div></div>
     <div class="stat-card"><div class="stat-icon si-green">🏆</div><div class="stat-info"><div class="stat-val">${concluidos}</div><div class="stat-label">Concluídos</div></div></div>
     <div class="stat-card"><div class="stat-icon si-gold">📊</div><div class="stat-info"><div class="stat-val">${totalPct}%</div><div class="stat-label">Progresso geral</div></div></div>
@@ -664,8 +732,8 @@ async function renderDashboard(ca){
   <div class="section-title">📚 ${recentes.length ? 'Continuar aprendendo' : 'Começar agora'}</div>
   ${mostrar.length
     ? `<div class="courses-grid">${cursosHtml}</div>
-       <div style="text-align:right;margin-top:16px"><button class="btn-sec" onclick="navTo('cursos')">Ver todos os cursos →</button></div>`
-    : `<div class="empty-state"><div class="empty-icon">📭</div>Nenhum curso disponível ainda.</div>`}`;
+       <div style="text-align:right;margin-top:16px"><button class="btn-sec" onclick="navTo('cursos')">Ver todos os materiais →</button></div>`
+    : `<div class="empty-state"><div class="empty-icon">📭</div>Nenhum material disponível ainda.</div>`}`;
 }
 
 // ─── CURSOS ───────────────────────────────────────────────
@@ -675,7 +743,7 @@ async function renderCursos(ca){
   const ativos = userProfile?.role==='admin' ? cursos : cursos.filter(c=>c.ativo);
 
   if(!ativos.length){
-    ca.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Nenhum curso disponível ainda.</div>';
+    ca.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div>Nenhum material disponível ainda.</div>';
     return;
   }
   const progSnap = await getDocs(collection(db,'progresso',currentUser.uid,'cursos'));
@@ -685,7 +753,8 @@ async function renderCursos(ca){
     const prog = progMap[c.id]; const pct = prog?.percentual||0; const done = prog?.concluido;
     return `
     <div class="course-card" onclick="openCourse('${c.id}')">
-      <div class="course-thumb">📖
+      <div class="course-thumb" style="${c.thumbnail?`background-image:url('${c.thumbnail}');background-size:cover;background-position:center`:''}">
+        ${!c.thumbnail?'📖':''}
         ${done?'<span class="course-badge">✓ Concluído</span>':''}
         ${!c.ativo?'<span class="course-badge draft">Rascunho</span>':''}
       </div>
@@ -704,7 +773,6 @@ async function renderCursos(ca){
 window.openCourse = async function(courseId){
   const ca = document.getElementById('content-area');
   ca.innerHTML = '<div class="spinner" style="margin:60px auto"></div>';
-  document.getElementById('page-title').textContent = 'Módulos';
 
   const [courseSnap, modsSnap] = await Promise.all([
     getDoc(doc(db,'cursos',courseId)),
@@ -714,6 +782,14 @@ window.openCourse = async function(courseId){
   const mods = []; modsSnap.forEach(d => mods.push({id:d.id,...d.data()}));
   currentCourse = course;
 
+  // se só tem 1 módulo, abre direto
+  if(mods.length === 1){
+    openModule(courseId, mods[0].id);
+    return;
+  }
+
+  // múltiplos módulos — mostra lista
+  document.getElementById('page-title').textContent = course.titulo;
   const progSnap = await getDocs(collection(db,'progresso',currentUser.uid,'cursos',courseId,'modulos'));
   const progMap = {}; progSnap.forEach(d => progMap[d.id] = d.data());
 
@@ -736,7 +812,7 @@ window.openCourse = async function(courseId){
     <h2>${course.titulo}</h2>
     <p>${course.descricao||''}</p>
   </div>
-  <div class="section-title">📋 Módulos</div>
+  <div class="section-title">📋 Conteúdos</div>
   <div class="modules-list">${modsHtml}</div>`;
 };
 
@@ -777,7 +853,7 @@ window.openModule = async function(courseId, moduleId){
 
   ca.innerHTML = `
   <div class="mod-view-container">
-    <button class="back-btn" onclick="openCourse('${courseId}')">← ${currentCourse?.titulo||'Curso'}</button>
+    <button class="back-btn" onclick="openCourse('${courseId}')">← ${currentCourse?.titulo||'Material'}</button>
     <div style="margin-bottom:18px">
       <h2 style="font-size:1.15rem;color:var(--primary);font-weight:700">${m.titulo}</h2>
     </div>
@@ -887,7 +963,7 @@ async function renderCertificados(ca){
   progSnap.forEach(d => { const p=d.data(); if(p.concluido) certs.push({id:d.id,...p,curso:cursosMap[d.id]}); });
 
   if(!certs.length){
-    ca.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div>Conclua cursos para ganhar certificados!</div>';
+    ca.innerHTML = '<div class="empty-state"><div class="empty-icon">🏆</div>Conclua materiais para ganhar certificados!</div>';
     return;
   }
   const html = certs.map(c => {
@@ -896,7 +972,7 @@ async function renderCertificados(ca){
     <div class="cert-item">
       <div class="cert-icon">🎓</div>
       <div class="cert-info">
-        <h4>${c.curso?.titulo||'Curso'}</h4>
+        <h4>${c.curso?.titulo||'Material'}</h4>
         <p>Concluído em ${d.toLocaleDateString('pt-BR')}</p>
       </div>
       <div class="cert-actions">
@@ -924,12 +1000,12 @@ window.showCertificate = async function(courseId){
     <div class="cert-divider"></div>
     <div class="cert-main">Certificamos que</div>
     <div class="cert-name">${userProfile?.name||currentUser.email}</div>
-    <div class="cert-main">concluiu com êxito o curso</div>
+    <div class="cert-main">concluiu com êxito o material</div>
     <div class="cert-course">${course?.titulo||''}</div>
     <div class="cert-divider"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px">
       <div style="text-align:left"><div style="font-size:.72rem;color:var(--text2)">Emitido em</div><div style="font-size:.88rem;color:var(--text)">${date.toLocaleDateString('pt-BR')}</div></div>
-      <div style="text-align:right"><div style="font-size:.72rem;color:var(--text2)">Falcioni Consultoria</div><div style="font-size:.82rem;color:var(--gold);font-weight:700">Universidade Corporativa</div></div>
+      <div style="text-align:right"><div style="font-size:.72rem;color:var(--text2)">DocFal</div><div style="font-size:.82rem;color:var(--gold);font-weight:700">Evolua com conhecimento</div></div>
     </div>
   </div>
   <div style="text-align:center;margin-top:16px">
@@ -946,11 +1022,10 @@ async function renderAdminCursos(ca){
   <tr>
     <td>${c.ordem}</td>
     <td style="font-weight:600">${c.titulo}</td>
-    <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.descricao?.substring(0,60)||''}...</td>
     <td><span class="status-dot ${c.ativo?'on':'off'}"></span>${c.ativo?'Ativo':'Rascunho'}</td>
     <td style="display:flex;gap:5px;flex-wrap:wrap">
       <button class="action-btn" onclick="modalEditCurso('${c.id}')">✏️ Editar</button>
-      <button class="action-btn" onclick="manageModulos('${c.id}','${c.titulo}')"  >📋 Módulos</button>
+      <button class="action-btn" onclick="modalQuizForCurso('${c.id}','${c.titulo}')">🧠 Quiz</button>
       <button class="action-btn" onclick="toggleCurso('${c.id}',${c.ativo})">${c.ativo?'Ocultar':'Publicar'}</button>
       <button class="action-btn danger" onclick="deleteCurso('${c.id}')">🗑</button>
     </td>
@@ -959,12 +1034,12 @@ async function renderAdminCursos(ca){
   ca.innerHTML = `
   <div class="admin-card">
     <div class="admin-card-header">
-      <div class="admin-card-title">📚 Cursos</div>
-      <button class="btn-add" onclick="modalNovoCurso()">+ Novo Curso</button>
+      <div class="admin-card-title">📚 Materiais</div>
+      <button class="btn-add" onclick="modalNovoCurso()">+ Novo Material</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>#</th><th>Título</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead>
-      <tbody>${rows||'<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">Nenhum curso</td></tr>'}</tbody>
+      <thead><tr><th>#</th><th>Título</th><th>Status</th><th>Ações</th></tr></thead>
+      <tbody>${rows||'<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px">Nenhum material</td></tr>'}</tbody>
     </table>
   </div>`;
 }
@@ -991,7 +1066,7 @@ async function renderModulosAdmin(ca, courseId, courseTitle){
     </td>
   </tr>`).join('');
   ca.innerHTML = `
-  <button class="back-btn" onclick="navTo('admin-cursos')">← Gerenciar Cursos</button>
+  <button class="back-btn" onclick="navTo('admin-cursos')">← Gerenciar Materiais</button>
   <div class="admin-card">
     <div class="admin-card-header">
       <div class="admin-card-title">📋 Módulos — ${courseTitle}</div>
@@ -1034,7 +1109,7 @@ async function renderAdminUsuarios(ca){
       <button class="btn-add" onclick="modalNovoColaborador()">+ Criar Conta</button>
     </div>
     <table class="admin-table">
-      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Cursos</th><th>Ação</th></tr></thead>
+      <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Materiais</th><th>Ação</th></tr></thead>
       <tbody>${rows||'<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">Nenhum usuário</td></tr>'}</tbody>
     </table>
   </div>`;
@@ -1074,51 +1149,93 @@ function openModal(title, bodyHtml, saveFn, saveLabel='Salvar'){
 window.closeModal = function(){ document.getElementById('modal-bg').style.display='none'; };
 
 // ─── CRUD CURSOS ──────────────────────────────────────────
+function cursoForm(c={}, mod={}){
+  return `
+  <div class="field"><label>Título</label><input id="c-titulo" type="text" value="${c.titulo||''}" placeholder="Nome do material"></div>
+  <div class="field"><label>Descrição (opcional)</label><textarea id="c-desc" placeholder="Descreva o material">${c.descricao||''}</textarea></div>
+  <div class="field">
+    <label>📎 Arquivo do Google Drive <span style="font-weight:400;color:var(--text2)">(PDF, Excel, Word, PPT, imagem)</span></label>
+    <input id="c-drive" type="text" value="${mod.pdfUrl||''}" placeholder="Cole aqui o link do Google Drive..." oninput="previewDrive('c-drive','c-drive-badge','c-drive-preview',this.value)">
+    <div id="c-drive-badge" style="margin-top:6px;font-size:.78rem">${mod.pdfUrl?'<span style="color:var(--green);font-weight:600">✅ Arquivo vinculado</span>':''}</div>
+    <div id="c-drive-preview" style="margin-top:8px"></div>
+  </div>
+  <div class="field"><label>🎬 Vídeo YouTube <span style="font-weight:400;color:var(--text2)">(opcional)</span></label><input id="c-video" type="text" value="${mod.videoUrl||''}" placeholder="https://youtube.com/watch?v=..."></div>
+  <div class="field" style="display:flex;align-items:center;gap:10px">
+    <input type="checkbox" id="c-quiz" ${mod.temQuiz?'checked':''} style="width:auto">
+    <label for="c-quiz" style="text-transform:none;font-size:.9rem;color:var(--text)">Este material tem quiz</label>
+  </div>
+  <div class="field"><label>Ordem</label><input id="c-ordem" type="number" value="${c.ordem||1}" min="1"></div>
+  <input type="hidden" id="c-thumb-auto" value="${c.thumbnail||''}">`;
+
+}
+
 window.modalNovoCurso = function(){
-  openModal('Novo Curso',`
-  <div class="field"><label>Título</label><input id="c-titulo" type="text" placeholder="Nome do curso"></div>
-  <div class="field"><label>Descrição</label><textarea id="c-desc" placeholder="Descreva o curso"></textarea></div>
-  <div class="field"><label>Thumbnail (URL de imagem)</label><input id="c-thumb" type="text" placeholder="https://..."></div>
-  <div class="field"><label>Ordem</label><input id="c-ordem" type="number" value="1" min="1"></div>
-  `, async ()=>{
+  openModal('Novo Material', cursoForm(), async ()=>{
     const titulo = document.getElementById('c-titulo').value.trim();
     if(!titulo){toast('Digite o título','err');return;}
-    await addDoc(collection(db,'cursos'),{
+    const matRef = await addDoc(collection(db,'cursos'),{
       titulo, descricao:document.getElementById('c-desc').value.trim(),
-      thumbnail:document.getElementById('c-thumb').value.trim(),
+      thumbnail:document.getElementById('c-thumb-auto').value.trim(),
       ordem:parseInt(document.getElementById('c-ordem').value)||1,
       ativo:false, criadoEm:serverTimestamp()
     });
-    toast('Curso criado!'); closeModal(); navTo('admin-cursos');
+    await addDoc(collection(db,'cursos',matRef.id,'modulos'),{
+      titulo, ordem:1,
+      pdfUrl:document.getElementById('c-drive').value.trim(),
+      videoUrl:document.getElementById('c-video').value.trim(),
+      temQuiz:document.getElementById('c-quiz').checked,
+      duracaoMin:0, conteudo:'', criadoEm:serverTimestamp()
+    });
+    toast('Material criado!'); closeModal(); navTo('admin-cursos');
   });
 };
 
 window.modalEditCurso = async function(id){
-  const snap = await getDoc(doc(db,'cursos',id)); const c = snap.data();
-  openModal('Editar Curso',`
-  <div class="field"><label>Título</label><input id="c-titulo" type="text" value="${c.titulo||''}"></div>
-  <div class="field"><label>Descrição</label><textarea id="c-desc">${c.descricao||''}</textarea></div>
-  <div class="field"><label>Thumbnail (URL)</label><input id="c-thumb" type="text" value="${c.thumbnail||''}"></div>
-  <div class="field"><label>Ordem</label><input id="c-ordem" type="number" value="${c.ordem||1}" min="1"></div>
-  `, async ()=>{
+  const [matSnap, modSnap] = await Promise.all([
+    getDoc(doc(db,'cursos',id)),
+    getDocs(query(collection(db,'cursos',id,'modulos'), orderBy('ordem')))
+  ]);
+  const c = matSnap.data();
+  let mod = {}, modId = null;
+  modSnap.forEach(d=>{ if(!modId){modId=d.id; mod=d.data();} });
+  openModal('Editar Material', cursoForm(c, mod), async ()=>{
+    const thumbVal = document.getElementById('c-thumb-auto').value.trim();
     await updateDoc(doc(db,'cursos',id),{
       titulo:document.getElementById('c-titulo').value.trim(),
       descricao:document.getElementById('c-desc').value.trim(),
-      thumbnail:document.getElementById('c-thumb').value.trim(),
       ordem:parseInt(document.getElementById('c-ordem').value)||1,
+      ...(thumbVal && {thumbnail: thumbVal}),
     });
-    toast('Curso atualizado!'); closeModal(); navTo('admin-cursos');
+    const modData = {
+      titulo:document.getElementById('c-titulo').value.trim(),
+      pdfUrl:document.getElementById('c-drive').value.trim(),
+      videoUrl:document.getElementById('c-video').value.trim(),
+      temQuiz:document.getElementById('c-quiz').checked,
+    };
+    if(modId) await updateDoc(doc(db,'cursos',id,'modulos',modId), modData);
+    else await addDoc(collection(db,'cursos',id,'modulos'),{...modData, ordem:1, duracaoMin:0, conteudo:'', criadoEm:serverTimestamp()});
+    toast('Material atualizado!'); closeModal(); navTo('admin-cursos');
   });
 };
 
 window.toggleCurso = async function(id,current){
   await updateDoc(doc(db,'cursos',id),{ativo:!current});
-  toast(!current?'Curso publicado!':'Curso ocultado'); navTo('admin-cursos');
+  toast(!current?'Material publicado!':'Material ocultado'); navTo('admin-cursos');
+};
+
+window.modalQuizForCurso = async function(courseId, courseTitle){
+  const snap = await getDocs(query(collection(db,'cursos',courseId,'modulos'), orderBy('ordem')));
+  let modId = null, modTitulo = courseTitle;
+  snap.forEach(d=>{ if(!modId){modId=d.id; modTitulo=d.data().titulo||courseTitle;} });
+  if(!modId){
+    toast('Salve o material primeiro antes de adicionar quiz','err'); return;
+  }
+  modalManageQuiz(courseId, modId, modTitulo, courseTitle);
 };
 
 window.deleteCurso = async function(id){
-  if(!confirm('Excluir este curso?')) return;
-  await deleteDoc(doc(db,'cursos',id)); toast('Curso excluído'); navTo('admin-cursos');
+  if(!confirm('Excluir este material?')) return;
+  await deleteDoc(doc(db,'cursos',id)); toast('Material excluído'); navTo('admin-cursos');
 };
 
 // ─── CRUD MÓDULOS ─────────────────────────────────────────
@@ -1126,8 +1243,13 @@ function moduloForm(m={}){
   return `
   <div class="field"><label>Título</label><input id="m-titulo" type="text" value="${m.titulo||''}" placeholder="Título do módulo"></div>
   <div class="field"><label>Ordem</label><input id="m-ordem" type="number" value="${m.ordem||1}" min="1"></div>
-  <div class="field"><label>🎬 URL do Vídeo (YouTube)</label><input id="m-video" type="text" value="${m.videoUrl||''}" placeholder="https://youtube.com/watch?v=..."></div>
-  <div class="field"><label>📄 URL do PDF (Google Drive)</label><input id="m-pdf" type="text" value="${m.pdfUrl||''}" placeholder="https://drive.google.com/file/d/..."></div>
+  <div class="field"><label>🎬 URL do Vídeo (YouTube)</label><input id="m-video" type="text" value="${m.videoUrl||''}" placeholder="https://youtube.com/watch?v=..." oninput="previewYt(this.value)"></div>
+  <div class="field">
+    <label>📎 Link do Google Drive <span style="font-weight:400;color:var(--text2)">(PDF, Word, PPT, imagem, planilha)</span></label>
+    <input id="m-pdf" type="text" value="${m.pdfUrl||''}" placeholder="Cole aqui o link do Google Drive..." oninput="previewDrive('m-pdf','m-drive-badge','m-drive-preview',this.value)">
+    <div id="m-drive-badge" style="margin-top:6px;font-size:.78rem"></div>
+    <div id="m-drive-preview" style="margin-top:8px"></div>
+  </div>
   <div class="field"><label>Duração (minutos)</label><input id="m-dur" type="number" value="${m.duracaoMin||''}" placeholder="30"></div>
   <div class="field"><label>Conteúdo (texto)</label><textarea id="m-conteudo" placeholder="Texto complementar...">${m.conteudo||''}</textarea></div>
   <div class="field" style="display:flex;align-items:center;gap:10px">
@@ -1529,7 +1651,12 @@ function etapaForm(e={}){
   return `
   <div class="field"><label>Título</label><input id="e-titulo" type="text" value="${e.titulo||''}" placeholder="Título da etapa"></div>
   <div class="field"><label>Ordem</label><input id="e-ordem" type="number" value="${e.ordem||1}" min="1"></div>
-  <div class="field"><label>📄 URL do Documento (Google Drive)</label><input id="e-pdf" type="text" value="${e.pdfUrl||''}" placeholder="https://drive.google.com/file/d/..."></div>
+  <div class="field">
+    <label>📎 Link do Google Drive <span style="font-weight:400;color:var(--text2)">(PDF, Word, PPT, imagem, planilha)</span></label>
+    <input id="e-pdf" type="text" value="${e.pdfUrl||''}" placeholder="Cole aqui o link do Google Drive..." oninput="previewDrive('e-pdf','e-drive-badge','e-drive-preview',this.value)">
+    <div id="e-drive-badge" style="margin-top:6px;font-size:.78rem"></div>
+    <div id="e-drive-preview" style="margin-top:8px"></div>
+  </div>
   <div class="field"><label>Duração estimada (minutos)</label><input id="e-dur" type="number" value="${e.duracaoMin||''}" placeholder="15"></div>
   <div class="field"><label>Conteúdo / Instrução</label><textarea id="e-conteudo" placeholder="Texto introdutório ou instruções para esta etapa...">${e.conteudo||''}</textarea></div>
   <div class="field" style="display:flex;align-items:center;gap:10px">

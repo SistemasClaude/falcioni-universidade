@@ -1,7 +1,7 @@
 {
-  "name": "Falcioni — Universidade Corporativa",
-  "short_name": "Falcioni UC",
-  "description": "Sistema de capacitação interna Falcioni Consultoria",
+  "name": "DocFal — Evolua com conhecimento",
+  "short_name": "DocFal",
+  "description": "DocFal — Evolua com conhecimento. Plataforma de capacitação Falcioni Consultoria.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
